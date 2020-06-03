@@ -183,38 +183,65 @@ function on_magiport(name){
 }
 
 function potionCheck(){
-
 	if(character.ctype === "merchant") return;
-
 	let mPotions = quantity(mPot);
 	let	hPotions = quantity(hPot);
 
+
+	if(hpRequestRecently && requestFulfilled){
+		requestFulfilled = false;
+		hpRequestRecently = false;
+		let data = {message:"Health Potions restocked", lowHealthPots:false, idleStatus:true};
+		send_cm(merchantName, data);
+	}
+
+	if(mpRequestRecently && requestFulfilled){
+		requestFulfilled = false;
+		mpRequestRecently = false;
+		let data = {message:"Mana Potions restocked", lowManaPots:false, idleStatus:true};
+		send_cm(merchantName, data);
+	}
+
+	
+	if(!merchantStatus.idle) return;
+ 	requestFulfilled = false;
+
+
 	if(mPotions < mPotionThreshold) {
-		let data = {message:"Low on Mana Potions", lowManaPots:true};
+		if(requestFulfilled)return;
+		requestFulfilled = true;
+		mpRequestRecently = true;
+		let data = {message:"Low on Mana Potions", lowManaPots:true, idleStatus:false};
 		send_cm(merchantName, data);
 	}
 	if(hPotions < hPotionThreshold) {
-		let data = {message:"Low on Health Potions", lowHealthPots:true};
+		if(requestFulfilled)return;
+		requestFulfilled = true;
+		hpRequestRecently = true;
+		let data = {message:"Low on Health Potions", lowHealthPots:true, idleStatus:false};
 		send_cm(merchantName, data);
 	}
+
 }
 
 function mLuckCheck(){
-	if(merchantStatus.idle) return;
+	if(mluckRequestRecently && requestFulfilled){
+		game_log("hello?");
+		requestFulfilled = false;
+		mluckRequestRecently = false;
+		let data = {message:"No longer need mLuck Buff", needmLuck:false, idleStatus:true};
+		send_cm(merchantName, data);
+	}
+	if(!merchantStatus.idle) return;
 	if(!character.s.mluck || character.s.mluck.ms < mluckDuration * 0.25 || !character.s.mluck.f === merchantName){
-		if(mluckRequestRecently)return;
-		
+		if(requestFulfilled)return;
+		requestFulfilled = true;
 		mluckRequestRecently = true;
-		merchantStatus.idle = false;
-		let data = {message:"Need mLuck Buff", needmLuck:true};
+		let data = {message:"Need mLuck Buff", needmLuck:true, idleStatus:false};
 		send_cm(merchantName, data);
 	} 
 
-	if(mluckRequestRecently == true && mluckRecently == true){
-		mluckRecently = false;
-		mluckRequestRecently = true;
-		merchantStatus.idle = true;
-	}
+
 }
 
 function requestTeleport() {
@@ -242,6 +269,12 @@ function on_cm(sender, data){
 	}
 	game_log("Received a CM from " + sender + " with payload: " + data.message);
 
+	if(data.idleStatus) {
+		merchantStatus.idle = true;
+	}
+	else if(!data.idleStatus) {
+		merchantStatus.idle = false;
+	}
 
 	//teleport system
 	if(data.requestTeleport){
@@ -252,16 +285,22 @@ function on_cm(sender, data){
 
 	// potion delivery service
 	if(data.lowHealthPots){
+		hpRecently = true;
 		buyPotions();
 		setTimeout(requestTeleport, 1000);
 		setTimeout(transferPotions, 2000, sender, hPot);
 		setTimeout(use_skill, 1000, "town");
+		let data = {message:"Request Fulfilled", requestFulfilled:true};
+		send_cm(sender, data);
 	}
 	if(data.lowManaPots){
+		mpRecently = true;
 		buyPotions();
 		setTimeout(requestTeleport, 1000);
 		setTimeout(transferPotions, 2000, sender, mPot);
 		setTimeout(use_skill, 1000, "town");
+		let data = {message:"Request Fulfilled", requestFulfilled:true};
+		send_cm(sender, data);
 	}
 
 	// everyone needs some luck
@@ -270,8 +309,12 @@ function on_cm(sender, data){
 		setTimeout(requestTeleport, 1000);
 		setTimeout(merchantsLuck, 3000, sender);
 		setTimeout(use_skill, 5000, "town");
+		let data = {message:"Request Fulfilled", requestFulfilled:true};
+		send_cm(sender, data);
 	}
-		
+	if(data.requestFulfilled){
+		requestFulfilled = true;
+	}	
 }
 
 

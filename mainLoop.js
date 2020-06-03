@@ -64,6 +64,11 @@ const specialItems = ["firestaff","firesword","seashell","offering"];
 let merchantStatus = {idle: true};
 let mluckRecently = false;
 let mluckRequestRecently = false;
+let hpRequestRecently = false;
+let mpRequestRecently = false
+let hpRecently = false;
+let mpRecently = false;
+let requestFulfilled = false;
 
 setInterval(main, 1000 / 4); // Loops every 1/4 seconds.
 setInterval(tier2Actions, 3000); // Loops every 3 seconds.

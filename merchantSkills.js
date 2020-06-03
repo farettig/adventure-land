@@ -1,7 +1,5 @@
 function merchantSkills(){
 	
-	if(character.map != "main") smart_move({to:"main"});
-
 	if (merchantStatus.idle){
 		sellTrash();
 		tidyInventory();
