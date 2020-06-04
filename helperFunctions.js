@@ -1,3 +1,4 @@
+let sentRequests = [];
 
 function loadCharacters(){
 	start_character("Matiin", "mainLoop");
@@ -113,6 +114,10 @@ function transferLoot(merchantName){
         //Transfer Items
         if(character.items.filter(element => element).length > 4){
             for(let i = 0; i <= 34; i++){
+				if(character.items[i] && (character.items[i].name === hPot || character.items[i].name === mPot))
+				{
+					return;
+				}
                 send_item(merchant, i, 9999);
             }
             log(character.name + " sent items to merchant.");
@@ -120,6 +125,7 @@ function transferLoot(merchantName){
     }   
 }
 
+/* 
 function relocateItems(){
     
     if(locate_item(hPot) !== -1 
@@ -139,8 +145,10 @@ function relocateItems(){
     if(locate_item("scroll0") !== -1 
        && locate_item("scroll0") !== 40)swap(locate_item("scroll0"), 40);
 }
+ */
 
-//on_party_invite gets called _automatically_ by the game on an invite 
+
+ //on_party_invite gets called _automatically_ by the game on an invite 
 function on_party_invite(name) {
 
 	if (whiteList.includes(name)){
@@ -182,71 +190,321 @@ function on_magiport(name){
 	}
 }
 
-function potionCheck(){
-	if(character.ctype === "merchant") return;
-	let mPotions = quantity(mPot);
-	let	hPotions = quantity(hPot);
-
-
-	if(hpRequestRecently && requestFulfilled){
-		requestFulfilled = false;
-		hpRequestRecently = false;
-		let data = {message:"Health Potions restocked", lowHealthPots:false, idleStatus:true};
-		send_cm(merchantName, data);
+function getEmptyInventorySlotCount()
+{
+	let emptyInvSlots = 0;
+	for (let item of character.items)
+	{
+		if (!item)
+		{
+			emptyInvSlots++;
+		}
 	}
 
-	if(mpRequestRecently && requestFulfilled){
-		requestFulfilled = false;
-		mpRequestRecently = false;
-		let data = {message:"Mana Potions restocked", lowManaPots:false, idleStatus:true};
-		send_cm(merchantName, data);
-	}
-
-	
-	if(!merchantStatus.idle) return;
- 	requestFulfilled = false;
-
-
-	if(mPotions < mPotionThreshold) {
-		if(requestFulfilled)return;
-		requestFulfilled = true;
-		mpRequestRecently = true;
-		let data = {message:"Low on Mana Potions", lowManaPots:true, idleStatus:false};
-		send_cm(merchantName, data);
-	}
-	if(hPotions < hPotionThreshold) {
-		if(requestFulfilled)return;
-		requestFulfilled = true;
-		hpRequestRecently = true;
-		let data = {message:"Low on Health Potions", lowHealthPots:true, idleStatus:false};
-		send_cm(merchantName, data);
-	}
-
+	return emptyInvSlots;
 }
 
-function mLuckCheck(){
-	if(mluckRequestRecently && requestFulfilled){
-		game_log("hello?");
-		requestFulfilled = false;
-		mluckRequestRecently = false;
-		let data = {message:"No longer need mLuck Buff", needmLuck:false, idleStatus:true};
-		send_cm(merchantName, data);
+
+function approachTarget(target, onComplete)
+{
+	if (!target)
+	{
+		return;
 	}
-	if(!merchantStatus.idle) return;
-	if(!character.s.mluck || character.s.mluck.ms < mluckDuration * 0.25 || !character.s.mluck.f === merchantName){
-		if(requestFulfilled)return;
-		requestFulfilled = true;
-		mluckRequestRecently = true;
-		let data = {message:"Need mLuck Buff", needmLuck:true, idleStatus:false};
-		send_cm(merchantName, data);
-	} 
 
-
+	if (!onComplete)
+	{
+		move(
+			character.x + (target.x - character.x) * 0.3,
+			character.y + (target.y - character.y) * 0.3
+		);
+	}
+	else
+	{
+		smart_move({ x: character.x + (target.x - character.x) * 0.3, y: character.y + (target.y - character.y) * 0.3 }, () => { onComplete(); });
+	}
 }
+
+
+function hasUpgradableItems()
+{
+	if (character.items.find((x) => { if (x && upgradeItemList.includes(x.name) && x.level < upgradeItemLevel2) return x; }))
+	{
+		return true;
+	}
+
+	return false;
+}
+
+function isInTown()
+{
+	return (character.map == merchantStandMap && distance(character, merchantStandCoords) < 200);
+}
+
+function goBackToTown(delay)
+{
+	if (returningToTown)
+	{
+		return;
+	}
+
+	stop();
+
+	log(character.name + " returning to town.");
+
+	returningToTown = true;
+
+	use("use_town");
+
+	setTimeout(function ()
+	{
+		goTo(merchantStandMap, merchantStandCoords, () => { returningToTown = false });
+	}, 5000);
+}
+
+function goTo(mapName = "main", coords = { x: 0, y: 0 }, oncomplete = null)
+{
+	traveling = true;
+
+	if (character.map != mapName)
+	{
+		if (oncomplete != null)
+		{
+			smart_move(mapName, () => { oncomplete(); traveling = false; });
+		}
+		else
+		{
+			smart_move(mapName, () => { traveling = false; });
+		}
+	}
+	else
+	{
+		if (oncomplete != null)
+		{
+			smart_move(coords, () => { oncomplete(); traveling = false; });
+		}
+		else
+		{
+			smart_move(coords, () => { traveling = false; });
+		}
+	}
+}
+
+function depositInventoryAtBank()
+{
+	if (!isInTown())
+	{
+		goBackToTown();
+		return;
+	}
+
+	log("Depositing inventory at bank...");
+	banking = true;
+
+	smart_move("bank", () =>
+	{
+		/* //	store in first bank
+		let storeCompounds = (getEmptyInventorySlotCount() < 8);
+		storeInventoryInBankVault(0, storeCompounds);
+
+		//	store in second bank
+		if (checkForLowInventorySpace())
+		{
+			setTimeout(() =>
+			{
+				storeCompounds = (getEmptyInventorySlotCount() < 8);
+				storeInventoryInBankVault(1, storeCompounds);
+				banking = false;
+
+			}, 1000);
+		} 
+		
+		else
+		{
+			banking = false;
+		}*/
+		depositItems();
+		depositMoney();
+		banking = false;
+
+	});
+}
+
+
+function checkMluck(target)
+{
+	return (target.s.mluck && target.s.mluck.f == merchantName) || (target.s.mluck && target.s.mluck.ms < mluckDuration * 0.5);
+}
+
+
+
+function requestMluck()
+{
+	if (sentRequests.find((x) => { if (x.message == "mluck") return x; }))
+	{
+		log(character.name + " waiting for Mluck, resending request...");
+	}
+	else
+	{
+		log(character.name + " requesting Mluck");
+		sentRequests.push({ message: "mluck", name: merchantName });
+	}
+
+	let data = { message: "mluck", name: character.name };
+	send_cm(merchantName, data);
+}
+
+function checkBuffs()
+{
+	if (character.name === merchantName) return;
+	let mluck = false;
+	//let elixir = false;
+
+	//	check that you have mLuck from your own merchant
+	if (checkMluck(character))
+	{
+		mluck = true;
+	}
+	else
+	{
+		//	if you have someone elses mluck and are in town just accept it, merchant will fix it after party leaves town
+		if (character.s.mluck && isInTown())
+		{
+			mluck = true;
+		}
+		else
+		{
+			mluck = false;
+		}
+	}
+
+	if (!mluck)
+	{
+		requestMluck();
+	}
+
+	//elixir = checkElixirBuff();
+
+	return (mluck);
+	//return (mluck && elixir);
+}
+
 
 function requestTeleport() {
-	let payload = {message:"I need a teleport!", requestTeleport: true}
-	send_cm(mageName, payload);
+	let data = {message:"I need a teleport!", requestTeleport: true}
+	send_cm(mageName, data);
+}
+
+
+function checkSentRequests()
+{
+	if (sentRequests.length == 0)
+	{
+		return;
+	}
+
+	log("Checking request status...");
+
+	for (let i = sentRequests.length - 1; i >= 0; i--)
+	{
+		let recieved = false;
+
+		if (sentRequests[i].message == "mluck")
+		{
+			if (checkMluck(character))
+			{
+				log("Mluck recieved. Thank you!");
+				recieved = true;
+			}
+		}
+		else if (sentRequests[i].message == "potions")
+		{
+			if (checkPotionInventory())
+			{
+				log("Potions recieved. Thank you!");
+				recieved = true;
+			}
+		}
+		else if (sentRequests[i].message == "elixir")
+		{
+			if (checkElixirBuff())
+			{
+				log("Elixir recieved. Thank you!");
+				recieved = true;
+			}
+		}
+
+		if (recieved)
+		{
+			send_cm(sentRequests[i].name, { message: "thanks", request: sentRequests[i].message });
+			sentRequests.splice(i, 1);
+		}
+	}
+}
+
+
+function checkPotionInventory()
+{
+	// merchant shouldn't check for potions himself - this breaks the routine.
+	if (character.name === merchantName) return;
+	let hPotions = quantity(hPot);
+	let mPotions = quantity(mPot);
+
+	if (mPotions < mPotionThreshold || hPotions < hPotionThreshold)
+	{
+		let healthPotsNeeded = potionMax - hPotions;
+		let manaPotsNeeded = potionMax - mPotions;
+
+		if (healthPotsNeeded < 0)
+		{
+			healthPotsNeeded = 0;
+		}
+		if (manaPotsNeeded < 0)
+		{
+			manaPotsNeeded = 0;
+		}
+
+		let potsList = { message: "buyPots", hPots: healthPotsNeeded, mPots: manaPotsNeeded };
+		send_cm(merchantName, potsList);
+
+		if (sentRequests.find((x) => { if (x.message == "potions") return x; }))
+		{
+			log(character.name + " waiting for potions, resending request... ");
+
+			//	try to fix the problem yourself if the merchant isn't responding
+			if (hPotions == 0 || mPotions == 0)
+			{
+				log(character.name + " has no potions, is returning to town.");
+				farmingModeActive = false;
+
+				if (!returningToTown && !traveling)
+				{
+					traveling = true;
+					goBackToTown();
+
+					setTimeout(() =>
+					{
+						log(character.name + " attempting to buy potions.");
+						buy_with_gold(hPot, healthPotsNeeded);
+						buy_with_gold(mPot, manaPotsNeeded);
+
+						traveling = false;
+					}, 10000);
+				}
+			}
+		}
+		else
+		{
+			log(character.name + " sending request for potions");
+			sentRequests.push({ message: "potions", name: merchantName });
+		}
+
+		return false;
+	}
+	else
+	{
+		return true;
+	}
 }
 
 ////////////// CM //////////////
@@ -269,54 +527,41 @@ function on_cm(sender, data){
 	}
 	game_log("Received a CM from " + sender + " with payload: " + data.message);
 
-	if(data.idleStatus) {
-		merchantStatus.idle = true;
+
+	if (character.ctype === "merchant")
+	{
+		merchant_on_cm(sender, data);
 	}
-	else if(!data.idleStatus) {
+	else if (character.ctype === "mage")
+	{
+		mage_on_cm(sender, data);
+	}
+	else if (character.ctype === "priest")
+	{
+		priest_on_cm(sender, data);
+	}
+	else if (character.ctpye === "ranger")
+	{
+		ranger_on_cm(sender, data);
+	}
+
+
+
+	if(data.walkToFarm){
+		stop();
 		merchantStatus.idle = false;
+		smart_move({to:"fancypots"}, ()=>{
+			getFarmingSpot(farmMonsterName, farmMap, farmMonsterNr, "move"), ()=> {
+				transferPotions(mageName,mPot)
+			};
+		});
 	}
+		
 
-	//teleport system
-	if(data.requestTeleport){
-		if(!character.ctype === "mage") return;
-		game_log("Teleport Requested From "  + sender);
-		use_skill("magiport", sender);
-	}
 
-	// potion delivery service
-	if(data.lowHealthPots){
-		hpRecently = true;
-		buyPotions();
-		setTimeout(requestTeleport, 1000);
-		setTimeout(transferPotions, 2000, sender, hPot);
-		setTimeout(use_skill, 1000, "town");
-		let data = {message:"Request Fulfilled", requestFulfilled:true};
-		send_cm(sender, data);
+	
+		
 	}
-	if(data.lowManaPots){
-		mpRecently = true;
-		buyPotions();
-		setTimeout(requestTeleport, 1000);
-		setTimeout(transferPotions, 2000, sender, mPot);
-		setTimeout(use_skill, 1000, "town");
-		let data = {message:"Request Fulfilled", requestFulfilled:true};
-		send_cm(sender, data);
-	}
-
-	// everyone needs some luck
-	if(data.needmLuck){
-		mluckRecently = true;
-		setTimeout(requestTeleport, 1000);
-		setTimeout(merchantsLuck, 3000, sender);
-		setTimeout(use_skill, 5000, "town");
-		let data = {message:"Request Fulfilled", requestFulfilled:true};
-		send_cm(sender, data);
-	}
-	if(data.requestFulfilled){
-		requestFulfilled = true;
-	}	
-}
-
 
 
 
@@ -345,3 +590,23 @@ function calc_attack(ctype, mainhand, main_stat, offhand=0, bonus_attack=0){
 	let freq = 0.000678*int + 0.001212*dex + 2/3/100 * level + G.classes[ctype].frequency + bonus_attackspeed/100 + gear_attackspeed/100
 	return freq
   }
+
+  function reportCard()
+  {
+      let output = "";
+  
+      for(let p of partyList)
+      {
+          let player = get_player(p);
+  
+          if(player)
+          {
+            let percent = (player.xp/G.levels[player.level])*100;
+              output += player.name + ": Level " + player.level +" with "+ Math.round(percent) + "%     ";
+          }
+      }
+  
+      show_json(output);
+  }
+  
+  

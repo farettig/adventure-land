@@ -33,10 +33,11 @@ const whiteList = ["Matin","Matiin","Matiiin","Matiiiin","Matiiiiin"];
 //  potion stuff
 const mPot = "mpot0"
 const hPot = "hpot0"
-const mPotionThreshold = 200;
-const hPotionThreshold = 50;
+const mPotionThreshold = 2000;
+const hPotionThreshold = 500;
 const healthPotThreshold = 0.95
 const manaPotThreshold = 0.85;
+const potionMax = 5000;
 
 //  inventory management
 const reserveMoney = 1000000;
@@ -45,8 +46,13 @@ const minRareCompoundScrolls = 3;
 const minNormalUpgradeScrolls = 200;
 const minRareUpgradeScrolls = 5;
 const inventoryMax = 31;
+const merchantStandMap = "main";
+const merchantStandCoords = {x:-100, y:-50};
 
 const trashName = ["hpbelt","hpring","hpearring","hpamulet","vitscroll","vitearring","ringsj"];
+
+
+
 
 
 const upgradeItemLevel1 = 5;
@@ -56,34 +62,54 @@ const profitMargin = 1.8;
 const manaReserve = 0.2;
 const mluckDuration = 3600000;
 
-const enchantItemList = ["wattire","wgloves","wbreeches","wshoes","wcap","bow","staff","pants1","helmet","shoes","gloves","pants","coat"];
+const upgradeItemList = ["wattire","wgloves","wbreeches","wshoes","wcap","bow","staff","pants1","helmet","shoes","gloves","pants","coat"];
 const combineItemList = ["intring","strring","dexring","vitring"];
 const vendorUpgradeList = ["shoes","gloves","helmet","coat"]; 	
-const specialItems = ["firestaff","firesword","seashell","offering"];
+const specialItems = ["firestaff","firesword","seashell","offering","essenceofire"];
 
-let merchantStatus = {idle: true};
+let merchantStatus = {idle: true, hasBeenTeleported: false};
 let mluckRecently = false;
-let mluckRequestRecently = false;
-let hpRequestRecently = false;
-let mpRequestRecently = false
 let hpRecently = false;
 let mpRecently = false;
 let requestFulfilled = false;
+let requestedSomething = false;
+
+const craftingEnabled = true;
+var craftingOn = craftingEnabled;
+var banking = false;
+var farmingModeActive = true;
+var returningToTown = false;
+var traveling = false;
+
+//  called on initialization
+onStart();
+function onStart()
+{
+    if (character.name == merchantName)
+    {
+        merchantOnStart();
+    }
+}
 
 setInterval(main, 1000 / 4); // Loops every 1/4 seconds.
 setInterval(tier2Actions, 3000); // Loops every 3 seconds.
 setInterval(respawnProcess, 15000)
+setInterval(tier3Actions, 15000);
 
 function main(){
 
     //If Character is dead, respawn
     if (character.rip) setTimeout(respawn, 15000);  
-    //If character is moving, do nothing
-    if(is_moving(character) || smart.moving){
-        if(character.ctype === "merchant"){
-            parent.close_merchant(41);
-        }
+
+    //  finish what you are doing before checking past here
+    if (is_moving(character) || smart.moving || returningToTown || character.q.upgrade || character.q.compound)
+    {
         return;
+     
+    }
+    if (character.name == merchantName)
+    {
+        standCheck();
     }
     //Replenish Health and Mana
     usePotions(healthPotThreshold, manaPotThreshold);
@@ -125,21 +151,12 @@ function main(){
 }
 
 function tier2Actions(){
-    
-    //If character is moving, do nothing
-    if(is_moving(character) || smart.moving){
-        if(character.ctype === "merchant"){
-            parent.close_merchant(41);
-        }
-        return;
-    }
-    
+        
     //Puts potions on Slots not transferred to merchant
-    relocateItems();
+    //relocateItems();
     //Transfer loot to merchant
     transferLoot(merchantName);
-    potionCheck();
-    mLuckCheck();
+
     
     //Run Merchant Skills
     if(character.ctype === "merchant"){
@@ -147,8 +164,16 @@ function tier2Actions(){
             parent.close_merchant(41);
         }
         merchantSkills();
+        merchantAuto();
         return;
     }
+}
+
+function tier3Actions(){
+    checkPotionInventory();
+    checkBuffs();
+    checkSentRequests();
+    checkRequests();
 }
 
 function respawnProcess(){

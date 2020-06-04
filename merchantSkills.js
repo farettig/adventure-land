@@ -1,55 +1,82 @@
+var vendorMode = false;			//	true when in town with shop, false when busy delivering items
+var deliveryMode = false;		//	true when the merchant has requests it needs to fulfill
+var exchangeMode = false;		//	true when the merchant is busy exchanging items with an npc
+var deliveryShipments = [];
+var deliveryRequests = [];
+
+function merchantOnStart()
+{
+	//pontyExclude.forEach(x => { buyFromPontyList.splice(buyFromPontyList.indexOf(x), 1) });
+	//merchantItems.forEach(x => { itemsToHoldOnTo.push(x) });
+	enableVendorMode();
+}
+
 function merchantSkills(){
 	
-	if (merchantStatus.idle){
-		sellTrash();
-		tidyInventory();
-		merchantsLuck();
-		buyCheapStuff();
-		upgradeItems();
-		// buyVendorUpgrade();
+
+
+	if(vendorMode){
+	sellTrash();
+	tidyInventory();
+	merchantsLuck();
+	buyCheapStuff();
+	upgradeItems();
+	buyScrolls();
+	// buyVendorUpgrade();
+
+	//searchItems2bSold Returns Array SLOTS. Therefor it can return ZEROES
+	//So we have to specifically look for UNDEFINED
+	//if(searchItems2bSold(sellItemLevel) !== undefined && findEmptyTradeSlots() !== undefined) sellItems(sellItemLevel, profitMargin);
+
 	
-		//searchItems2bSold Returns Array SLOTS. Therefor it can return ZEROES
-		//So we have to specifically look for UNDEFINED
-		//if(searchItems2bSold(sellItemLevel) !== undefined && findEmptyTradeSlots() !== undefined) sellItems(sellItemLevel, profitMargin);
+	//compound process
+	if(findTriple(0)) compoundItems(0);
+	if(findTriple(1)) compoundItems(1);
+	if(findTriple(2)) compoundItems(2);
+	if(findTriple(3)) compoundItems(3);
 
-		
-		//compound process
-		if(findTriple(0)) compoundItems(0);
-		if(findTriple(1)) compoundItems(1);
-		if(findTriple(2)) compoundItems(2);
-		if(findTriple(3)) compoundItems(3);
+	//relocateItems();
+	};
 
-		relocateItems();
 
-		// walk around town some time. Stretch your legs
-		if (new Date().getMinutes() === 00 
-		|| new Date().getMinutes() === 15 
-		|| new Date().getMinutes() === 30 
-		|| new Date().getMinutes() === 45){
-			//	Close merchant Stand
-			parent.close_merchant(41);
-			//	Move to scrolls and buy them
-			smart_move({to:"scrolls"}, () => {
-				buyScrolls();
-				//Exchange gems
-				smart_move({to:"exchange"}, () => {
-					exchangeGems();
-					//Deposit Money
-					smart_move({to:"bank"}, () => {
-						depositMoney();
-						depositItems();
-						//Go to the market and sell things
-						smart_move({to:"town"}, () => {
-							openMerchantStand();
-						});
-					});
-				});
-			});
-		}
+}
+function isBusy()
+{
+	return returningToTown || deliveryMode || banking || exchangeMode || character.q.upgrade || character.q.compound;
+}
+
+function enableVendorMode()
+{
+	if (returningToTown || deliveryMode || banking)
+	{
+		return;
+	}
+
+	log("Merchant returning to vendor mode.");
+
+	if (!isInTown())
+	{
+		goBackToTown();
+	}
+	else
+	{
+		smart_move(merchantStandCoords, () =>
+		{
+			log("Merchant entered vendor mode.");
+			log("Crafting Mode: " + craftingOn);
+			parent.open_merchant(locate_item("stand0"));
+			vendorMode = true;
+		});
 	}
 }
 
+function disableVendorMode()
+{
+	log("Merchant exited vendor mode.");
 
+	parent.close_merchant();
+	vendorMode = false;
+}
 
 function buyPotions(){
 	let mPotions = quantity(mPot);
@@ -57,33 +84,44 @@ function buyPotions(){
 
 	if(mPotions < mPotionThreshold || hPotions < hPotionThreshold){
 
-		if(mPotions < mPotionThreshold) buy_with_gold("mpot0", mPotionThreshold - mPotions + mPotionThreshold);
-		if(hPotions < hPotionThreshold) buy_with_gold("hpot0", hPotionThreshold - hPotions + hPotionThreshold);
+		if(mPotions < mPotionThreshold) buy_with_gold(mPot, mPotionThreshold - mPotions + mPotionThreshold);
+		if(hPotions < hPotionThreshold) buy_with_gold(hPot, hPotionThreshold - hPotions + hPotionThreshold);
 		log("Bought Potions!");
 	}
 }
 
-function transferPotions(name, type){
-	
-	if(character.items[locate_item(type)]){
-		send_item(name, locate_item(type), quantity(type));
-		game_log("Delivered Potions to " + name);
+
+function tidyInventory()
+{
+	if (character.q.upgrade || character.q.compound)
+	{
+		return;
 	}
-	
 
-}
+	let slotToMove = -1;
+	let lastEmptySlot = -1;
+	for (let i = 0; i < character.items.length; i++)
+	{
+		let item = character.items[i];
 
-function tidyInventory(){
-
-	for(let i = 34; i > 0; i--){
-		if(character.items[i] && (character.items[i].name === hPot || character.items[i].name === mPot)){
-			relocateItems();
-			return;
+		if (item && item.name == "placeholder")
+		{
+			continue;
 		}
-		if(character.items[i] && !character.items[i-1]){
-			swap(i, i-1)
-			log("Tidying Inventory...");
+
+		if (item && slotToMove == -1)
+		{
+			slotToMove = i;
 		}
+		else if (slotToMove != -1 && !item)
+		{
+			lastEmptySlot = i;
+		}
+	}
+
+	if (lastEmptySlot > 0)
+	{
+		swap(slotToMove, lastEmptySlot);
 	}
 }
 
@@ -116,6 +154,7 @@ function buyVendorUpgrade(){
 }
 
 function sellTrash(){
+	
 	for(let i = 0; i <= 41; i++){
 		if(character.items[i]
 		   && trashName.indexOf(character.items[i].name) !== -1
@@ -147,7 +186,7 @@ function depositMoney(){
 }
 
 function depositItems(){
-	for(let i = 0; i <= 41; i++){
+	for(let i = 41; i > 0; i--){
         if(!character.items[i]) return;
         if(character.items[i] 
 		&& (character.items[i].level && character.items[i].level >= sellItemLevel)
@@ -168,7 +207,7 @@ function upgradeItems(){
 	for(let i = 0; i <= 41; i++){
 		if(character.items[i]
 		&& (character.items[i].level < upgradeItemLevel1)
-		&& enchantItemList.includes(character.items[i].name)
+		&& upgradeItemList.includes(character.items[i].name)
 		&& item_grade(character.items[i]) < 1 ){
 			log("Upgrade Started for item " + G.items[character.items[i].name].name + " +" + character.items[i].level);
 			upgrade(i,locate_item("scroll0"));
@@ -177,7 +216,7 @@ function upgradeItems(){
 		}else{
 			if(character.items[i]
 				&& (character.items[i].level < upgradeItemLevel2)
-				&& enchantItemList.includes(character.items[i].name)){
+				&& upgradeItemList.includes(character.items[i].name)){
 					log("Upgrade Started for item " + G.items[character.items[i].name].name + " +" + character.items[i].level);
 					upgrade(i,locate_item("scroll1"));
 					return;
@@ -232,17 +271,6 @@ function findTriple(level){
 	}
 }
 
-
-/* function searchItems2bSold(sellItemLevel = 2){
-	for (let i = 0; i <= 41; i++){
-		if(character.items[i]
-		   && character.items[i].level === sellItemLevel) return i;
-	}
-} 
-
-function sellItems(sellItemLevel = 2, profitMargin = 2){
-	trade(searchItems2bSold(sellItemLevel), findEmptyTradeSlots(),  item_value(character.items[searchItems2bSold(sellItemLevel)]) * profitMargin);
-} */
 
 function findEmptyTradeSlots(){
 	let tradeSlots = Object.keys(character.slots).filter(tradeSlot => tradeSlot.includes("trade"));
@@ -304,5 +332,324 @@ function openMerchantStand(){
 			});
 		});
 	}
+}
+
+
+
+
+function merchant_on_cm(sender, data)
+{
+	if (data.message == "buyPots")
+	{
+		if (deliveryRequests.find((x) => { if (x.request == "potions" && x.sender == sender) return x; }))
+		{
+			log("Already have potion request from " + sender);
+			return;
+		}
+
+		log("Recieved potion request from " + sender);
+		deliveryRequests.push({ request: "potions", sender: sender, shipment: null, hPots: data.hPots, mPots: data.mPots });
+	}
+	else if (data.message == "mluck")
+	{
+		if (deliveryRequests.find((x) => { if (x.request == "mluck") return x; }))
+		{
+			log("Already have mluck request.");
+			return;
+		}
+
+		log("Recieved mluck request from " + sender);
+		deliveryRequests.push({ request: "mluck", sender: sender });
+	}
+	else if (data.message == "thanks")
+	{
+		log("Successful delivery confirmation from " + sender);
+
+		if (data.request == "mluck")
+		{
+			for (let i = deliveryRequests.length - 1; i >= 0; i--)
+			{
+				if (deliveryRequests[i].request == "mluck")
+				{
+					deliveryRequests.splice(i, 1);
+				}
+			}
+		}
+		else
+		{
+			deliveryRequests.splice(deliveryRequests.indexOf(x => x.sender == sender && x.request == data.request), 1);
+		}
+	}
+
+
+	//	this should remain the last check
+	if (data.message == "deliveryConfirmation")
+	{
+		if (!data.confirm)
+		{
+			return;
+		}
+
+		for (let i = deliveryRequests.length - 1; i >= 0; i--)
+		{
+			if (deliveryRequests[i].sender == sender)
+			{
+				log("Cleaning up delivery list...");
+				deliveryRequests.splice(i, 1);
+			}
+		}
+
+		for (let i = deliveryShipments.length - 1; i >= 0; i--)
+		{
+			if (deliveryShipments[i].name == sender)
+			{
+				log("Cleaning up delivery list...");
+				deliveryShipments.splice(i, 1);
+			}
+		}
+	}
+	
+}
+
+function checkRequests()
+{
+	if (deliveryRequests.length == 0)
+	{
+		deliveryMode = false;
+		return;
+	}
+
+	if (deliveryRequests.length > 0)
+	{
+		deliveryMode = true;
+		disableVendorMode();
+
+		for (let i = 0; i < deliveryRequests.length; i++)
+		{
+			//	go buy potions
+			if (deliveryRequests[i].request == "potions" && !deliveryRequests[i].shipment)
+			{
+				buyPotionsFor(deliveryRequests[i].sender, deliveryRequests[i].hPots, deliveryRequests[i].mPots);
+			}
+			//	deliver to recipient
+			else if (deliveryRequests[i].shipment || deliveryRequests[i].request == "mluck")
+			{
+				let recipient = parent.entities[deliveryRequests[i].sender];
+				if (recipient)
+				{
+					approachTarget(recipient);
+				}
+				else
+				{
+					requestTeleport();
+				}
+			}
+		}
+	}
+}
+
+function getShipmentFor(name)
+{
+	if (deliveryShipments.length == 0)
+	{
+		return null;
+	}
+
+	for (let i = 0; i < deliveryShipments.length; i++)
+	{
+		if (deliveryShipments[i].name == name)
+		{
+			return deliveryShipments[i];
+		}
+	}
+
+	return null;
+}
+
+
+function standCheck()
+{
+	if (is_moving(character) || smart.moving || returningToTown)
+	{
+		if (character.stand)
+		{
+			parent.close_merchant();
+		}
+	}
+	else if (vendorMode)
+	{
+		parent.open_merchant(locate_item("stand0"));
+	}
+}
+
+
+function buyPotionsFor(name, healthPots, manaPots)
+{
+	let request = deliveryRequests.find((x) =>
+	{
+		if (x.sender == name && x.request == "potions")
+		{
+			return x;
+		}
+	});
+
+	if (!request)
+	{
+		log("Attempting to buy potions but don't have request");
+		return;
+	}
+
+	if (getEmptyInventorySlotCount() < 8)
+	{
+		sellTrash();
+
+		if (getEmptyInventorySlotCount() < 8 && (!hasUpgradableItems() && craftingOn))
+		{
+			log("Need inventory space to buy potions, going to bank.");
+			disableVendorMode();
+			depositInventoryAtBank();
+			return;
+		}
+		else
+		{
+			log("Continuing to craft in order to free inventory space.");
+		}
+	}
+
+	if (!isInTown())
+	{
+		log("Returning to buy potions...");
+		goBackToTown();
+		return;
+	}
+
+	let h = healthPots - quantity(hPot);
+	let m = manaPots - quantity(mPot);
+
+	if (h > 0)
+	{
+		buy_with_gold(hPot, h);
+		log("Buying " + healthPots + " health potions");
+	}
+
+	if (m > 0)
+	{
+		buy_with_gold(mPot, m);
+		log("Buying " + manaPots + " mana potions");
+	}
+
+	let potionShipment = { name: name, hPots: healthPots, mPots: manaPots };
+	deliveryShipments.push(potionShipment);
+	request.shipment = potionShipment;
+}
+
+function deliverItems(shipmentToDeliver)
+{
+	if (shipmentToDeliver.hPots != null || shipmentToDeliver.mPots != null)
+	{
+		deliverPotions(shipmentToDeliver);
+	}
+	else if (shipmentToDeliver.elixir != null)
+	{
+		deliverElixir(shipmentToDeliver);
+	}
+}
+function deliverPotions(shipment)
+{
+	let recipient = parent.entities[shipment.name];
+	if (distance(recipient, character) < 200)
+	{
+		log("Delivering potions to " + shipment.name);
+		let index = deliveryShipments.indexOf(shipment);
+		deliveryShipments.splice(index, 1);
+		send_item(shipment.name, locate_item(hPot), shipment.hPots);
+		send_item(shipment.name, locate_item(mPot), shipment.mPots);
+		//send_item(shipment.name, locate_item(hPot), quantity(hPot));
+		//send_item(shipment.name, locate_item(mPot), quantity(mPot));
+	}
+	else
+	{
+		approachTarget(recipient);
+	}
+}
+
+
+
+function merchantAuto(target)
+{
+ 	
+	if (!isBusy())
+	{
+		if (isInTown() && !vendorMode)
+		{
+			enableVendorMode();
+		}
+		else if (!isInTown())
+		{
+			goBackToTown();
+		}
+	}
+	
+/* 
+	//	keep magic luck on yourself
+	if (!checkMluck(character) && !is_on_cooldown("mluck"))
+	{
+		log("mlucking self");
+		use_skill("mluck", character);
+		reduce_cooldown("mluck", character.ping);
+	} 
+
+ */
+	for (let other in parent.entities)
+	{
+		let isPartyMember = parent.party_list.includes(other);
+		let friendlyTarget = parent.entities[other];
+
+		if (!friendlyTarget.player || friendlyTarget.npc)
+		{
+			continue;
+		}
+
+		if (isPartyMember)
+		{
+			if (distance(friendlyTarget, character) < 200)
+			{
+				let shipment = getShipmentFor(friendlyTarget.name);
+
+				if (shipment)
+				{
+					deliverItems(shipment);
+				}
+				else if (!checkMluck(friendlyTarget))
+				{
+					log("Giving mluck to " + friendlyTarget.name);
+					use_skill("mluck", friendlyTarget);
+					reduce_cooldown("mluck", character.ping);
+				}
+			}
+			else if (deliveryMode && !returningToTown && deliveryRequests.length > 0)
+			{
+				log("Moving closer to recipient.");
+				approachTarget(friendlyTarget);
+			}
+		}
+		else if (friendlyTarget)
+		{
+			//	mluck others but some safety checks to make sure you don't spam it
+			if (!is_on_cooldown("mluck") && !checkMluck(friendlyTarget) && is_in_range(friendlyTarget, "mluck") && !friendlyTarget.afk && !friendlyTarget.stand && character.mp > character.max_mp * 0.5)
+			{
+				log("Giving mluck to " + friendlyTarget.name);
+				use_skill("mluck", friendlyTarget);
+				reduce_cooldown("mluck", character.ping);
+			}
+		}
+	}
+}
+
+
+function checkMluck(target)
+{
+	let mluck = (target.s.mluck && target.s.mluck.f == merchantName) || (target.s.mluck && target.s.mluck.ms < mluckDuration * 0.5);
+	return mluck;
 }
 

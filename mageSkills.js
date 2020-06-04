@@ -42,7 +42,8 @@ function mageSkills(target){
 		}
 	});
 
-	//Burst
+/* 	
+//Burst
 	if(target
 	   && character.mp > (character.max_mp * manaReserve)
 	   && target.hp >= (character.mp * 0.5)
@@ -50,5 +51,21 @@ function mageSkills(target){
 	   && !is_on_cooldown("burst")){
 		use_skill("burst");	
 		game_log("Mage bursting enemy");
+	} 
+*/
+}
+
+function mage_on_cm(sender, data)
+{
+if(data.requestTeleport){
+	if(!character.ctype === "mage") return;
+	game_log("Teleport Requested From "  + sender);
+	usePotions();
+	if(character.mp < G.skills.magiport.mp){
+		let data = {message:"Critically low on mana", idleStatus: false, walkToFarm: true}
+		send_cm(sender,data);
+		return;
 	}
+	use_skill("magiport", sender);
+}
 }
