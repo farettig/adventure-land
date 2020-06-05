@@ -186,7 +186,26 @@ function hasUpgradableItems()
 
 function isInTown()
 {
-	return (character.map == merchantStandMap && distance(character, merchantStandCoords) < 200);
+	if((character.map == merchantStandMap && distance(character, merchantStandCoords) < 1000))
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+function isAtFarmSpot()
+{
+	let farmspot = getFarmingSpot(farmMonsterName, farmMap, farmMonsterNr,"coord");
+	if(character.map == farmMap && distance(character, farmspot) < 300)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
 }
 
 function goBackToTown(delay)
@@ -479,11 +498,13 @@ function doCombat(){
 		//Attacks the target
 		autoFight(target);
 	}
-	// else
-	// {
-	// 	//Go to Farming Area
-	// 	getFarmingSpot(farmMonsterName, farmMap, farmMonsterNr, "move");
-	// }
+	else 
+	{	//Go to Farming Area
+		if(!isAtFarmSpot()){
+			getFarmingSpot(farmMonsterName, farmMap, farmMonsterNr, "move");
+		}
+	
+	}
 }
 
 function engageTarget()
@@ -554,7 +575,7 @@ function getTarget(farmTarget){
 		});
 		//Returns any monster that targets nobody
 		target = get_nearest_monster({
-			max_att:150,
+			//max_att:150,
 			type:farmTarget,
 			no_target:true
 		});
@@ -663,3 +684,7 @@ function reportCard()
 	show_json(output);
 }
 
+function on_combined_damage() // When multiple characters stay in the same spot, they receive combined damage, this function gets called whenever a monster deals combined damage
+{
+	move(character.real_x + (Math.random()*50)-25, character.real_y + (Math.random()*50)-25);
+}

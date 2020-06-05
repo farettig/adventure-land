@@ -15,13 +15,16 @@ map_key("7", "snippet", "stopCharacters()")
 //const farmMonsterName = "bee";
 //const farmMap = "main";
 //const farmMonsterNr = 4;
-const farmMonsterName = "croc";
-const farmMap = "main";
-const farmMonsterNr = 6;
+// const farmMonsterName = "crabx";
+// const farmMap = "main";
+// const farmMonsterNr = 5;
+// const specialMonsters = ["phoenix","snowman"];
+// const singleTarget = false;
+const farmMonsterName = "boar";
+const farmMap = "winterland";
+const farmMonsterNr = 8;
 const specialMonsters = ["phoenix","snowman"];
-const singleTarget = false;
-
-
+const singleTarget = true;
 
 
 //  Defining Characters
@@ -38,8 +41,8 @@ const mainTank = {name: priestName, class: "priest"};
 
 
 //  potion stuff
-const mPot = "mpot0"
-const hPot = "hpot0"
+const mPot = "mpot1"
+const hPot = "hpot1"
 const mPotionThreshold = 2000;
 const hPotionThreshold = 500;
 const healthPotThreshold = 0.95
@@ -56,7 +59,7 @@ const inventoryMax = 31;
 const merchantStandMap = "main";
 const merchantStandCoords = {x:-100, y:-50};
 
-const trashName = ["hpbelt","hpring","hpearring","hpamulet","vitscroll","vitearring","ringsj"];
+const trashName = ["hpbelt","hpring","hpearring","hpamulet","vitscroll","vitearring","vitring","ringsj"];
 
 
 
@@ -72,7 +75,7 @@ const mluckDuration = 3600000;
 const upgradeItemList = ["wattire","wgloves","wbreeches","wshoes","wcap","bow","staff","pants1","helmet","shoes","gloves","pants","coat"];
 const combineItemList = ["intring","strring","dexring","vitring"];
 const vendorUpgradeList = ["shoes","gloves","helmet","coat"]; 	
-const specialItems = ["firestaff","firesword","seashell","offering","essenceofire"];
+const specialItems = ["firestaff","firesword","seashell","offering","essenceofire","leather"];
 
 let merchantStatus = {idle: true, hasBeenTeleported: false};
 let mluckRecently = false;
@@ -98,6 +101,8 @@ function onStart()
         merchantOnStart();
     }
 }
+
+
 
 setInterval(main, 1000 / 4); // Loops every 1/4 seconds.
 setInterval(tier2Actions, 3000); // Loops every 3 seconds.

@@ -5,7 +5,7 @@ function rangerSkills(target, farmMonsterName){
 
     //Use Ranger Skills
     if(character.mp > (character.max_mp * manaReserve)){
-        //3-Shot
+        //3-Shot7
         if(character.mp > G.skills["3shot"].mp
             && !is_on_cooldown("attack")
             && !singleTarget){

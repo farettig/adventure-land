@@ -58,4 +58,19 @@ function priestSkills(target){
         use_skill("curse");
         game_log("Priest cursed the enemy");
     }
+    if(get_target_of(target) && get_target_of(target) !== character && is_in_range(target,"absorb") && !is_on_cooldown("absorb") && character.mp > G.skills.absorb.mp)
+    {
+        let friend = get_target_of(target);
+        if(friend !== character){
+            use_skill("absorb", friend);
+            game_log("Priest took aggro");
+        }
+    }
+
+    if(character.level > 69 && !is_on_cooldown("darkblessing") && character.mp > G.skills.darkblessing.mp)
+    {
+        use_skill("darkblessing",parent.entities["Matiiin"]);
+
+    }
+
 }

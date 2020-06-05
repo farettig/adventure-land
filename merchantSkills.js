@@ -38,6 +38,15 @@ function merchantSkills(){
 	//relocateItems();
 	};
 
+	if (new Date().getMinutes() === 00
+		|| new Date().getMinutes() === 15
+		|| new Date().getMinutes() === 30
+	   	|| new Date().getMinutes() === 45
+		|| new Date().getMinutes() === 38)
+		{
+			depositInventoryAtBank();
+		}
+
 
 }
 function isBusy()
