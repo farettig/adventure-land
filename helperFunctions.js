@@ -1,4 +1,4 @@
-let sentRequests = [];
+
 
 function loadCharacters(){
 	start_character("Matiin", "mainLoop");
@@ -48,59 +48,7 @@ function getFarmingSpot(farmMonsterName = "crab", farmMap = "main", farmMonsterN
 	}
 }
 
-function getTarget(farmTarget){
 
-	let target = get_targeted_monster();
-	if(target) return target;
-	
-	if(!target){
-		//Returns monster that targets character
-		target = get_nearest_monster({
-			target:character.name
-		});
-		if(target){
-			change_target(target);
-			return target;
-		}
-		//Returns monster that targets party-member
-		parent.party_list.forEach(partyMemberName => {
-			target = get_nearest_monster({
-				target:partyMemberName
-			});
-			if(target){
-				change_target(target);
-				return target;
-			}
-		});
-		//Returns any monster that targets nobody
-		target = get_nearest_monster({
-			max_att:150,
-			type:farmTarget,
-			no_target:true
-		});
-		if(target){
-			change_target(target);
-			return target;
-		}
-	}
-}
-
-function autoFight(target){
-
-    if(!is_in_range(target, "attack")){
-        smart_move(
-            character.x + (target.x - character.x) * 0.3,
-            character.y + (target.y - character.y) * 0.3
-        );
-    }
-    else if (!is_on_cooldown("attack")){
-        attack(target).then((message) => {
-            reduce_cooldown("attack", character.ping*.95);
-        }).catch((message) => {
-            log(character.name + " attack failed: " + message.reason);
-        });
-    }
-}
 
 function transferLoot(merchantName){
     let merchant = get_player(merchantName);
@@ -507,19 +455,136 @@ function checkPotionInventory()
 	}
 }
 
-////////////// CM //////////////
 
-///		send_cm format
-///		data = {message:"readyCheck",readyCheck:ready}
-///		send_cm(recipient, data)
-///		
-///		data is an array and we can pass a lot of data. and reference it like data.message or (data.readyCheck == ready)
+function doCombat(){
+	if(!singleTarget)
+	{
+		target = engageTarget();
+	}
+	else
+	{
+		target = singleTargetCombat();
+	}
 
+	if(target)
+	{
+		//Kites Target
+		//kiteTarget(target);
+		//Circles Target
+		//circleTarget(target);
+		//Uses available skills
+		if(character.ctype === "mage") mageSkills(target);
+		if(character.ctype === "priest") priestSkills(target);
+		if(character.ctype === "ranger") rangerSkills(target, farmMonsterName);
+		//Attacks the target
+		autoFight(target);
+	}
+	// else
+	// {
+	// 	//Go to Farming Area
+	// 	getFarmingSpot(farmMonsterName, farmMap, farmMonsterNr, "move");
+	// }
+}
 
+function engageTarget()
+{
+	//Finds a suitable target and attacks it. Also returns the target!
+	let target = null;
 
+	//  look for any special targets
+	for(let i = 0; i < specialMonsters.length; i++)
+	{
+		target = getTarget(specialMonsters[i]);
+	}
 
+	//  look for the monster you are farming
+	if(!target)
+	{
+		target = getTarget(farmMonsterName);
+	}
+	
+	return target;
 
-function on_cm(sender, data){
+	
+}
+
+function singleTargetCombat()
+{
+	let target = null;
+	
+	if(character.ctype === mainTank.class)
+	{
+		target = engageTarget();
+	}
+	else
+	// {
+	// 	let testTarget = parent.entities["Matiiiin"];
+	// 	target = testTarget.target
+	// }
+	{
+	 	target = get_target_of(parent.entities[mainTank.name]);
+	}
+
+	return target;
+
+}
+function getTarget(farmTarget){
+
+	let target = get_targeted_monster();
+	if(target) return target;
+	
+	if(!target){
+		//Returns monster that targets character
+		target = get_nearest_monster({
+			target:character.name
+		});
+		if(target){
+			change_target(target);
+			return target;
+		}
+		//Returns monster that targets party-member
+		parent.party_list.forEach(partyMemberName => {
+			target = get_nearest_monster({
+				target:partyMemberName
+			});
+			if(target){
+				change_target(target);
+				return target;
+			}
+		});
+		//Returns any monster that targets nobody
+		target = get_nearest_monster({
+			max_att:150,
+			type:farmTarget,
+			no_target:true
+		});
+		if(target){
+			change_target(target);
+			return target;
+		}
+	}
+}
+
+function autoFight(target){
+
+    if(!is_in_range(target, "attack")){
+        smart_move(
+            character.x + (target.x - character.x) * 0.3,
+            character.y + (target.y - character.y) * 0.3
+        );
+    }
+    else if (!is_on_cooldown("attack")){
+        attack(target).then((message) => {
+            reduce_cooldown("attack", character.ping*.95);
+        }).catch((message) => {
+            //log(character.name + " attack failed: " + message.reason);
+        });
+    }
+}
+////// CM //////
+
+function on_cm(sender, data)
+{
 	if(!whiteList.includes(sender)){
 		game_log("CM from outside whitelist" + sender);
 		game_log("Data from outside sender" + data);
@@ -544,24 +609,10 @@ function on_cm(sender, data){
 	{
 		ranger_on_cm(sender, data);
 	}
-
-
-
-	if(data.walkToFarm){
-		stop();
-		merchantStatus.idle = false;
-		smart_move({to:"fancypots"}, ()=>{
-			getFarmingSpot(farmMonsterName, farmMap, farmMonsterNr, "move"), ()=> {
-				transferPotions(mageName,mPot)
-			};
-		});
-	}
 		
+}
 
 
-	
-		
-	}
 
 
 
@@ -591,22 +642,24 @@ function calc_attack(ctype, mainhand, main_stat, offhand=0, bonus_attack=0){
 	return freq
   }
 
-  function reportCard()
-  {
-      let output = "";
-  
-      for(let p of partyList)
-      {
-          let player = get_player(p);
-  
-          if(player)
-          {
-            let percent = (player.xp/G.levels[player.level])*100;
-              output += player.name + ": Level " + player.level +" with "+ Math.round(percent) + "%     ";
-          }
-      }
-  
-      show_json(output);
-  }
-  
-  
+
+
+// Shows some experience stats for your party
+function reportCard()
+	{
+	let output = []
+
+	for (let p of partyList)
+	{
+		let player = get_player(p);
+
+		if (player)
+		{
+			let percent = (player.xp / G.levels[player.level]) * 100;
+			output.push(player.name + ": L" + player.level + " " + player.ctype+ " with " + percent.toLocaleString(undefined, {maximumFractionDigits:2}) + "%");
+		}
+	}
+
+	show_json(output);
+}
+

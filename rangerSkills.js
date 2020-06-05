@@ -7,7 +7,8 @@ function rangerSkills(target, farmMonsterName){
     if(character.mp > (character.max_mp * manaReserve)){
         //3-Shot
         if(character.mp > G.skills["3shot"].mp
-            && !is_on_cooldown("attack")){
+            && !is_on_cooldown("attack")
+            && !singleTarget){
             let targets = Object.values(parent.entities).filter(entity => entity.mtype === farmMonsterName && is_in_range(entity, "3shot"));
             if(targets.length >= 3) use_skill("3shot", targets);
             //game_log("Ranger used 3-Shot");

@@ -19,6 +19,9 @@ const farmMonsterName = "croc";
 const farmMap = "main";
 const farmMonsterNr = 6;
 const specialMonsters = ["phoenix","snowman"];
+const singleTarget = false;
+
+
 
 
 //  Defining Characters
@@ -29,6 +32,10 @@ const mageName = "Matiiin";
 const warriorName = "Matin";
 const partyList = [merchantName, priestName, rangerName, mageName];
 const whiteList = ["Matin","Matiin","Matiiin","Matiiiin","Matiiiiin"];
+//  class of your main tank
+
+const mainTank = {name: priestName, class: "priest"};
+
 
 //  potion stuff
 const mPot = "mpot0"
@@ -80,6 +87,7 @@ var banking = false;
 var farmingModeActive = true;
 var returningToTown = false;
 var traveling = false;
+let sentRequests = [];
 
 //  called on initialization
 onStart();
@@ -94,7 +102,7 @@ function onStart()
 setInterval(main, 1000 / 4); // Loops every 1/4 seconds.
 setInterval(tier2Actions, 3000); // Loops every 3 seconds.
 setInterval(respawnProcess, 15000)
-setInterval(tier3Actions, 15000);
+setInterval(tier3Actions, 7500);
 
 function main(){
 
@@ -102,15 +110,10 @@ function main(){
     if (character.rip) setTimeout(respawn, 15000);  
 
     //  finish what you are doing before checking past here
-    if (is_moving(character) || smart.moving || returningToTown || character.q.upgrade || character.q.compound)
-    {
-        return;
+    if (is_moving(character) || smart.moving || returningToTown || character.q.upgrade || character.q.compound)     return;
      
-    }
-    if (character.name == merchantName)
-    {
-        standCheck();
-    }
+    if (character.name == merchantName)     standCheck();
+
     //Replenish Health and Mana
     usePotions(healthPotThreshold, manaPotThreshold);
     //Loot everything
@@ -119,35 +122,7 @@ function main(){
     //Merchant Skills are Tier 2 actions
     if(character.ctype === "merchant") return;
 
-    //Finds a suitable target and attacks it. Also returns the target!
-    let target = null;
-
-    //  look for any special targets
-    for(let i = 0; i < specialMonsters.length; i++){
-        target = getTarget(specialMonsters[i]);
-    }
-
-    //  look for the monster you are farming
-    if(!target)
-    {
-        target = getTarget(farmMonsterName);
-    }
-
-    if(target){
-        //Kites Target
-        //kiteTarget(target);
-        //Circles Target
-        //circleTarget(target);
-        //Uses available skills
-        if(character.ctype === "mage") mageSkills(target);
-        if(character.ctype === "priest") priestSkills(target);
-        if(character.ctype === "ranger") rangerSkills(target, farmMonsterName);
-        //Attacks the target
-        autoFight(target);
-    }else{
-        //Go to Farming Area
-        getFarmingSpot(farmMonsterName, farmMap, farmMonsterNr, "move");
-    }
+   doCombat();
 }
 
 function tier2Actions(){
@@ -181,7 +156,7 @@ function respawnProcess(){
    
     if (parent.party_list.length < 2){
         setTimeout(loadCharacters());
-        setTimeout(initParty(), 8000);
+        setTimeout(initParty(), 4000);
     }
 
 }    

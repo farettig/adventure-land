@@ -55,17 +55,18 @@ function mageSkills(target){
 */
 }
 
+
 function mage_on_cm(sender, data)
 {
 if(data.requestTeleport){
 	if(!character.ctype === "mage") return;
 	game_log("Teleport Requested From "  + sender);
 	usePotions();
-	if(character.mp < G.skills.magiport.mp){
-		let data = {message:"Critically low on mana", idleStatus: false, walkToFarm: true}
-		send_cm(sender,data);
-		return;
-	}
+	// if(character.mp < G.skills.magiport.mp){
+	// 	let data = {message:"Critically low on mana", idleStatus: false, walkToFarm: true}
+	// 	send_cm(sender,data);
+	// 	return;
+	// }
 	use_skill("magiport", sender);
 }
 }
