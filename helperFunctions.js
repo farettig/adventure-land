@@ -12,7 +12,7 @@ function initParty(){
 	send_party_invite("Matiin");
 	send_party_invite("Matiiin");
 	send_party_invite("Matiiiin");
-	send_party_invite("Matiiiiin");
+	//send_party_invite("Matiiiiin");
 
 	log("Party Invites sent!");
 }
@@ -48,55 +48,51 @@ function getFarmingSpot(farmMonsterName = "crab", farmMap = "main", farmMonsterN
 	}
 }
 
-
-
 function transferLoot(merchantName){
     let merchant = get_player(merchantName);
     if(character.ctype === "merchant") return;
     if(character.ctype !== "merchant"
        && merchant
-       && merchant.owner === character.owner
+       //&& merchant.owner === character.owner
        && distance(character, merchant) < 400){
         //Transfer Gold
         if(character.gold > 1000) send_gold(merchant, character.gold)
         //Transfer Items
         if(character.items.filter(element => element).length > 4){
-            for(let i = 0; i <= 34; i++){
-				if(character.items[i] && (character.items[i].name === hPot || character.items[i].name === mPot))
+            for(let i = 0; i <= 41; i++){
+				if(character.items[i] && (!itemsToKeep.includes(character.items[i].name)))
 				{
-					return;
+					send_item(merchantName, i, 9999);
+					log(character.name + " sent items to merchant.");
 				}
-                send_item(merchant, i, 9999);
+               
             }
-            log(character.name + " sent items to merchant.");
+            
         }
     }   
 }
 
-/* 
-function relocateItems(){
-    
-    if(locate_item(hPot) !== -1 
-       && locate_item(hPot) !== 37) swap(locate_item(hPot), 37);
-    if(locate_item(mPot) !== -1 
-	   && locate_item(mPot) !== 38)swap(locate_item(mPot), 38);
+function relocateItems()
+{
+	if(locate_item(hPot) !== -1 
+		&& locate_item(hPot) !== 37) swap(locate_item(hPot), 37);
+	if(locate_item(mPot) !== -1 
+		&& locate_item(mPot) !== 38)swap(locate_item(mPot), 38);
 	//Compound Scroll
-    if(locate_item("cscroll1") !== -1 
-       && locate_item("cscroll1") !== 35)swap(locate_item("cscroll0"), 39);
-    //Upgrade Scroll
-    if(locate_item("scroll1") !== -1 
-       && locate_item("scroll1") !== 36)swap(locate_item("scroll0"), 40);  
-    //Compound Scroll
-    if(locate_item("cscroll0") !== -1 
-       && locate_item("cscroll0") !== 39)swap(locate_item("cscroll0"), 39);
-    //Upgrade Scroll
-    if(locate_item("scroll0") !== -1 
-       && locate_item("scroll0") !== 40)swap(locate_item("scroll0"), 40);
+	if(locate_item("cscroll1") !== -1 
+		&& locate_item("cscroll1") !== 35)swap(locate_item("cscroll0"), 39);
+	//Upgrade Scroll
+	if(locate_item("scroll1") !== -1 
+		&& locate_item("scroll1") !== 36)swap(locate_item("scroll0"), 40);  
+	//Compound Scroll
+	if(locate_item("cscroll0") !== -1 
+		&& locate_item("cscroll0") !== 39)swap(locate_item("cscroll0"), 39);
+	//Upgrade Scroll
+	if(locate_item("scroll0") !== -1 
+		&& locate_item("scroll0") !== 40)swap(locate_item("scroll0"), 40);
 }
- */
 
-
- //on_party_invite gets called _automatically_ by the game on an invite 
+//on_party_invite gets called _automatically_ by the game on an invite 
 function on_party_invite(name) {
 
 	if (whiteList.includes(name)){
@@ -105,11 +101,23 @@ function on_party_invite(name) {
 }
 
 
-//Replenish Health and Mana
-function usePotions(healthPotThreshold, manaPotThreshold){
-    if(!character.rip
-        && (character.hp < (character.max_hp - 200)
-        || character.mp < (character.max_mp - 300))) use_hp_or_mp();
+// function usePotions(healthPotThreshold, manaPotThreshold){
+//     if(!character.rip
+//         && (character.hp < (character.max_hp - 200)
+//         || character.mp < (character.max_mp - 300))) use_hp_or_mp();
+// }
+
+
+function usePotions() 	//Replenish Health and Mana
+{ 
+	if(character.rip) return;
+
+	let hPotGives = G.items[hPot].gives[0][1];
+	let mPotGives = G.items[mPot].gives[0][1];
+	if(character.hp < (character.max_hp - hPotGives) || character.mp < (character.max_mp - mPotGives)) 
+	{
+	use_hp_or_mp();
+	}
 }
 
 function getHolidayBuff(){
@@ -152,7 +160,6 @@ function getEmptyInventorySlotCount()
 	return emptyInvSlots;
 }
 
-
 function approachTarget(target, onComplete)
 {
 	if (!target)
@@ -172,7 +179,6 @@ function approachTarget(target, onComplete)
 		smart_move({ x: character.x + (target.x - character.x) * 0.3, y: character.y + (target.y - character.y) * 0.3 }, () => { onComplete(); });
 	}
 }
-
 
 function hasUpgradableItems()
 {
@@ -195,6 +201,7 @@ function isInTown()
 		return false;
 	}
 }
+
 function isAtFarmSpot()
 {
 	let farmspot = getFarmingSpot(farmMonsterName, farmMap, farmMonsterNr,"coord");
@@ -297,13 +304,10 @@ function depositInventoryAtBank()
 	});
 }
 
-
 function checkMluck(target)
 {
 	return (target.s.mluck && target.s.mluck.f == merchantName) || (target.s.mluck && target.s.mluck.ms < mluckDuration * 0.5);
 }
-
-
 
 function requestMluck()
 {
@@ -326,6 +330,7 @@ function checkBuffs()
 	if (character.name === merchantName) return;
 	let mluck = false;
 	//let elixir = false;
+
 
 	//	check that you have mLuck from your own merchant
 	if (checkMluck(character))
@@ -361,7 +366,6 @@ function requestTeleport() {
 	let data = {message:"I need a teleport!", requestTeleport: true}
 	send_cm(mageName, data);
 }
-
 
 function checkSentRequests()
 {
@@ -408,7 +412,6 @@ function checkSentRequests()
 		}
 	}
 }
-
 
 function checkPotionInventory()
 {
@@ -473,7 +476,6 @@ function checkPotionInventory()
 		return true;
 	}
 }
-
 
 function doCombat(){
 	if(!singleTarget)
@@ -549,6 +551,7 @@ function singleTargetCombat()
 	return target;
 
 }
+
 function getTarget(farmTarget){
 
 	let target = get_targeted_monster();
@@ -634,12 +637,38 @@ function on_cm(sender, data)
 }
 
 
-
-
-
 //////		Extra functions		//////
 
-function calc_attack(ctype, mainhand, main_stat, offhand=0, bonus_attack=0){
+function characterMainhand()
+{
+	let cMainhand = character.slots.mainhand;
+	let output = item_properties(cMainhand).attack;
+	return output;
+}
+
+function findWeaponDamage(itemName, upgradeLevel, outputMethod=true)
+{
+	let weaponData = {name: itemName, level: upgradeLevel};
+	let output = item_properties(weaponData).attack;
+	if(outputMethod)
+	{
+		log("+" + upgradeLevel + " " + itemName + " - " + output + " attack")
+	}
+	else if (!outputMethod) 
+	{
+		return output;
+	}
+}
+
+function characterMainstat()
+{
+	let ctype = character.ctype;
+	let main_stat = character[G.classes[ctype].main_stat];
+	return main_stat;
+}
+
+function calc_attack(mainhand = characterMainhand(), main_stat = characterMainstat(), ctype = character.ctype, offhand=0, bonus_attack=0)
+{
 	// ctype: character class
 	// main_stat: Amount of points in the classes' main stat
 	// mainhand/offhand: Weapon damage of the respective slot
@@ -647,21 +676,32 @@ function calc_attack(ctype, mainhand, main_stat, offhand=0, bonus_attack=0){
 	// bonus_attack: Sum of all attack boni from achievments
 	// Note: priests have 60% more attack value, but only 40% of that contributes to actual damage => 1.6*0.4 = 0.64
 	// for the effective attack of a priest multiply result with 0.64
-	let base_dmg = G.classes[ctype].attack
-	let attack = 0.05 * main_stat * (mainhand + 0.7 * offhand) + mainhand + offhand + base_dmg + bonus_attack
+
+	let base_dmg = G.classes[ctype].attack;
+	let attack = Math.round ( 0.05 * main_stat * (mainhand + 0.7 * offhand) + mainhand + offhand + base_dmg + bonus_attack );
+	log(attack + " attack | " + mainhand + " weapon | " + main_stat + " " + G.classes[ctype].main_stat);
 	return attack
-  }
-  
-  function calc_frequency(ctype, dex, int, level, bonus_attackspeed=0, gear_attackspeed=0){
+
+}
+
+function compareWeapons(first, second)
+{
+	if(!first || !second) return;
+	let firstDmg = calc_attack(first);
+	let secondDmg = calc_attack(second);
+
+}
+
+function calc_frequency(ctype, dex, int, level, bonus_attackspeed=0, gear_attackspeed=0){
 	// ctype: character class
 	// dex: Dexterity stat points
 	// int: Intelligence stat points
 	// level: Character level
 	// bonus_attackspeed: Sum of all boni to attackspeed from achievements. Use displayed value
 	// gear_attackspeed: Sum of all boni to attackspeed from gear. Use displayed value
-	let freq = 0.000678*int + 0.001212*dex + 2/3/100 * level + G.classes[ctype].frequency + bonus_attackspeed/100 + gear_attackspeed/100
-	return freq
-  }
+	let freq = 4/59/100*int + 12/99/100*dex + 2/3/100 * level + G.classes[ctype].frequency + bonus_attackspeed/100 + gear_attackspeed/100;
+	return freq;
+}
 
 
 
@@ -687,4 +727,37 @@ function reportCard()
 function on_combined_damage() // When multiple characters stay in the same spot, they receive combined damage, this function gets called whenever a monster deals combined damage
 {
 	move(character.real_x + (Math.random()*50)-25, character.real_y + (Math.random()*50)-25);
+}
+
+
+// Reload code on character
+function reloadCharacter(name)
+{
+    if (name === character.name)
+    {
+        say("/pure_eval setTimeout(()=>{parent.start_runner()}, 500)");
+        parent.stop_runner();
+    } 
+    else
+    {
+        command_character(name, "say(\"/pure_eval setTimeout(()=>{start_runner()}, 500)\")");
+        command_character(name, "say(\"/pure_eval stop_runner();\")");
+    }
+}
+
+function reloadCharacters()
+{
+    for(let i = 0; i < partyList.length; i++)
+    {
+        let name = partyList[i];
+        if (name !== character.name && get_active_characters()[name])
+        {
+            reloadCharacter(name);
+        }    
+    }
+
+    setTimeout(() =>
+    {
+        reloadCharacter(character.name);
+    }, 1000);
 }
