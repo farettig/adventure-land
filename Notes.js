@@ -1,4 +1,50 @@
 /*
+
+
+//////		TO DO LIST		//////
+
+1) Minimum gold held by non-merchants (enough for a full buy of potions)
+	- non-merchants already go to town when out of potions
+	- they just don't have gold to buy
+
+2) Add elixirs into the mix
+	- store elixirs in bank
+	- have merchant retrieve elixirs
+	- deliver elixirs
+	- farming characters consume appropriate elixir
+
+3) Setup warrior skills
+	- eventual party setup
+	- replace mage - max party fun
+
+3) CM for telling non-merchants to go to town and idle 
+	- useful for testing, moving to a new spot, regearing
+
+4) CM for telling merchant that inventory is full
+	- issues sometimes cause bots to get stuck or to never pick up more
+	- safety check like with potions that if inventory is too full -> go to town
+
+
+
+//////		WISH LIST	//////
+
+# CM to bots that also sends items and tells them to equip it.
+	- allows for easier item transfer and upgrades
+
+# better upgrading system that bulk-upgrades a tier before moving up to the next tier.
+	- check out the flood upgrading that Spadar used to do before cooldown changes
+	- https://www.youtube.com/watch?v=kgqcUgjIIWI&feature=youtu.be
+	- https://pastebin.com/QNrheJXb
+
+# Mage blink as a method of transit
+	- will have to see how this works out without a mage in party
+	
+
+
+
+
+
+
 //############# Start Characters ############# 
 
 start_character("Magos", "MainLoop");
