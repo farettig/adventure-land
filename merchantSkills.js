@@ -38,11 +38,7 @@ function merchantSkills(){
 	//relocateItems();
 	};
 
-	if (new Date().getMinutes() === 00
-		|| new Date().getMinutes() === 15
-		|| new Date().getMinutes() === 30
-	   	|| new Date().getMinutes() === 45
-		|| new Date().getMinutes() === 38)
+	if (new Date().getMinutes() === 00 || new Date().getMinutes() === 30)
 		{
 			depositInventoryAtBank();
 		}
@@ -343,9 +339,6 @@ function openMerchantStand(){
 	}
 }
 
-
-
-
 function merchant_on_cm(sender, data)
 {
 	if (data.message == "buyPots")
@@ -491,7 +484,6 @@ function standCheck()
 	}
 }
 
-
 function buyPotionsFor(name, healthPots, manaPots)
 {
 	let request = deliveryRequests.find((x) =>
@@ -584,9 +576,80 @@ function deliverPotions(shipment)
 
 
 
+// function merchantAuto(target)
+// {
+ 	
+// 	if (!isBusy())
+// 	{
+// 		if (isInTown() && !vendorMode)
+// 		{
+// 			enableVendorMode();
+// 		}
+// 		else if (!isInTown())
+// 		{
+// 			goBackToTown();
+// 		}
+// 	}
+	
+// /* 
+// 	//	keep magic luck on yourself
+// 	if (!checkMluck(character) && !is_on_cooldown("mluck"))
+// 	{
+// 		log("mlucking self");
+// 		use_skill("mluck", character);
+// 		reduce_cooldown("mluck", character.ping);
+// 	} 
+
+//  */
+// 	for (let other in parent.entities)
+// 	{
+// 		let isPartyMember = parent.party_list.includes(other);
+// 		let friendlyTarget = parent.entities[other];
+
+// 		if (!friendlyTarget.player || friendlyTarget.npc)
+// 		{
+// 			continue;
+// 		}
+
+// 		if (isPartyMember)
+// 		{
+// 			if (distance(friendlyTarget, character) < 200)
+// 			{
+// 				let shipment = getShipmentFor(friendlyTarget.name);
+
+// 				if (shipment)
+// 				{
+// 					deliverItems(shipment);
+// 				}
+// 				else if (!checkMluck(friendlyTarget))
+// 				{
+// 					log("Giving mluck to " + friendlyTarget.name);
+// 					use_skill("mluck", friendlyTarget);
+// 					reduce_cooldown("mluck", character.ping);
+// 				}
+// 			}
+// 			else if (deliveryMode && !returningToTown && deliveryRequests.length > 0)
+// 			{
+// 				log("Moving closer to recipient.");
+// 				approachTarget(friendlyTarget);
+// 			}
+// 		}
+// 		else if (friendlyTarget)
+// 		{
+// 			//	mluck others but some safety checks to make sure you don't spam it
+// 			if (!is_on_cooldown("mluck") && !checkMluck(friendlyTarget) && is_in_range(friendlyTarget, "mluck") && !friendlyTarget.afk && !friendlyTarget.stand && character.mp > character.max_mp * 0.5)
+// 			{
+// 				log("Giving mluck to " + friendlyTarget.name);
+// 				use_skill("mluck", friendlyTarget);
+// 				reduce_cooldown("mluck", character.ping);
+// 			}
+// 		}
+// 	}
+// }
+
 function merchantAuto(target)
 {
- 	
+	standCheck();
 	if (!isBusy())
 	{
 		if (isInTown() && !vendorMode)
@@ -599,29 +662,26 @@ function merchantAuto(target)
 		}
 	}
 	
-/* 
 	//	keep magic luck on yourself
 	if (!checkMluck(character) && !is_on_cooldown("mluck"))
 	{
-		log("mlucking self");
 		use_skill("mluck", character);
 		reduce_cooldown("mluck", character.ping);
-	} 
+	}
 
- */
-	for (let other in parent.entities)
+	for(let p in parent.entities)
 	{
-		let isPartyMember = parent.party_list.includes(other);
-		let friendlyTarget = parent.entities[other];
+		let isPartyMember = whiteList.includes(p);
+		let friendlyTarget = parent.entities[p];
 
 		if (!friendlyTarget.player || friendlyTarget.npc)
 		{
 			continue;
 		}
 
-		if (isPartyMember)
+		if (isPartyMember && friendlyTarget)
 		{
-			if (distance(friendlyTarget, character) < 200)
+			if (distance(friendlyTarget, character) < 100)
 			{
 				let shipment = getShipmentFor(friendlyTarget.name);
 
@@ -636,10 +696,10 @@ function merchantAuto(target)
 					reduce_cooldown("mluck", character.ping);
 				}
 			}
-			else if (deliveryMode && !returningToTown && deliveryRequests.length > 0)
+			else if (deliveryMode && !smart.moving && !returningToTown && deliveryRequests.length > 0 && friendlyTarget.name === deliveryRequests[0].sender)
 			{
 				log("Moving closer to recipient.");
-				approachTarget(friendlyTarget);
+				smart_move({x:friendlyTarget.x, y:friendlyTarget.y});
 			}
 		}
 		else if (friendlyTarget)
@@ -654,11 +714,3 @@ function merchantAuto(target)
 		}
 	}
 }
-
-
-function checkMluck(target)
-{
-	let mluck = (target.s.mluck && target.s.mluck.f == merchantName) || (target.s.mluck && target.s.mluck.ms < mluckDuration * 0.5);
-	return mluck;
-}
-
