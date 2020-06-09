@@ -9,7 +9,7 @@ function mageSkills(target){
 	   && character.mp > G.skills.reflection.mp
 	   && !is_on_cooldown("reflection")){
 		use_skill("reflection", character);
-		game_log("Mage shielded himself");
+		//game_log("Mage shielded himself");
 	}
 	
 	//Energize and Shield Party Members
@@ -28,7 +28,7 @@ function mageSkills(target){
 			   	&& is_in_range(partyMember, "reflection")
 			  	&& !is_on_cooldown("reflection")){
 				use_skill("reflection", partyMember);
-				game_log("Mage shielded " + partyMember.name);
+				//game_log("Mage shielded " + partyMember.name);
 			}
 			//Energize Partymenber
 			if(character.mp > (character.max_mp * manaReserve)
@@ -37,7 +37,7 @@ function mageSkills(target){
 			   	&& is_in_range(partyMember, "energize")
 			  	&& !is_on_cooldown("energize")){
 				use_skill("energize", partyMember);
-				game_log("Mage energized " + partyMember.name);
+				//game_log("Mage energized " + partyMember.name);
 			}
 		}
 	});
