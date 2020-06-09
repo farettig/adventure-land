@@ -15,16 +15,17 @@ map_key("7", "snippet", "stopCharacters()")
 //const farmMonsterName = "bee";
 //const farmMap = "main";
 //const farmMonsterNr = 4;
-// const farmMonsterName = "crabx";
-// const farmMap = "main";
-// const farmMonsterNr = 5;
+
+const farmMonsterName = "crabx";
+const farmMap = "main";
+const farmMonsterNr = 5;
+const specialMonsters = ["phoenix","snowman","goldenbat"];
+const singleTarget = false;
+// const farmMonsterName = "boar";
+// const farmMap = "winterland";
+// const farmMonsterNr = 8;
 // const specialMonsters = ["phoenix","snowman"];
-// const singleTarget = false;
-const farmMonsterName = "boar";
-const farmMap = "winterland";
-const farmMonsterNr = 8;
-const specialMonsters = ["phoenix","snowman"];
-const singleTarget = true;
+// const singleTarget = true;
 
 
 //  Defining Characters
@@ -35,8 +36,8 @@ const mageName = "Matiiin";
 const warriorName = "Matin";
 const partyList = [merchantName, priestName, rangerName, mageName];
 const whiteList = ["Matin","Matiin","Matiiin","Matiiiin","Matiiiiin"];
-//  class of your main tank
 
+//  class of your main tank
 const mainTank = {name: priestName, class: "priest"};
 
 
@@ -50,7 +51,7 @@ const manaPotThreshold = 0.85;
 const potionMax = 5000;
 
 //  inventory management
-const reserveMoney = 1000000;
+const reserveMoney = 10000000;
 const minNormalCompoundScrolls = 10;
 const minRareCompoundScrolls = 3;
 const minNormalUpgradeScrolls = 200;
@@ -58,12 +59,16 @@ const minRareUpgradeScrolls = 5;
 const inventoryMax = 31;
 const merchantStandMap = "main";
 const merchantStandCoords = {x:-100, y:-50};
+const itemsToKeep = [mPot, hPot, "tracker"];
 
-const trashName = ["hpbelt","hpring","hpearring","hpamulet","vitscroll","vitearring","vitring","ringsj"];
+const trashName = ["hpbelt","hpring","hpearring","hpamulet","vitscroll","vitearring","vitring","ringsj",
+                    "cclaw"];
 
 
 
 
+//  Upgrade stuff
+const baseChance = [100.00,   98.00,   95.00,   71.26,   61.42,   41.38,   26.35,   15.51,   7.55,   3.25,   28.00,   22.00,];
 
 const upgradeItemLevel1 = 5;
 const upgradeItemLevel2 = 7;
@@ -72,9 +77,10 @@ const profitMargin = 1.8;
 const manaReserve = 0.2;
 const mluckDuration = 3600000;
 
-const upgradeItemList = ["wattire","wgloves","wbreeches","wshoes","wcap","bow","staff","pants1","helmet","shoes","gloves","pants","coat"];
+const upgradeItemList = ["wattire","wgloves","wbreeches","wshoes","wcap","bow","staff","pants1",
+                        "helmet","shoes","gloves","pants","coat","quiver","wbasher","xmashat"];
 const combineItemList = ["intring","strring","dexring","vitring"];
-const vendorUpgradeList = ["shoes","gloves","helmet","coat"]; 	
+const vendorUpgradeList = ["shoes","gloves","helmet","coat","wbasher"]; 	
 const specialItems = ["firestaff","firesword","seashell","offering","essenceofire","leather"];
 
 let merchantStatus = {idle: true, hasBeenTeleported: false};
@@ -120,7 +126,7 @@ function main(){
     if (character.name == merchantName)     standCheck();
 
     //Replenish Health and Mana
-    usePotions(healthPotThreshold, manaPotThreshold);
+    usePotions();
     //Loot everything
     loot();
     
@@ -133,9 +139,11 @@ function main(){
 function tier2Actions(){
         
     //Puts potions on Slots not transferred to merchant
-    //relocateItems();
+    relocateItems();
     //Transfer loot to merchant
     transferLoot(merchantName);
+    checkPotionInventory();
+    checkBuffs();
 
     
     //Run Merchant Skills
@@ -150,8 +158,6 @@ function tier2Actions(){
 }
 
 function tier3Actions(){
-    checkPotionInventory();
-    checkBuffs();
     checkSentRequests();
     checkRequests();
 }
@@ -159,7 +165,7 @@ function tier3Actions(){
 function respawnProcess(){
     if(character.ctype === "merchant") return;
    
-    if (parent.party_list.length < 2){
+    if (parent.party_list.length < 3){
         setTimeout(loadCharacters());
         setTimeout(initParty(), 4000);
     }
