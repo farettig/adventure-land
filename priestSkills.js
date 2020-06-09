@@ -1,6 +1,7 @@
 function priestSkills(target){
 
     //How much Mana should be kept in reserve
+
     let manaReserve = 0.5;
     let hurtPartyMembers = 0;
     let healingThreshold = 0.9;
@@ -9,7 +10,7 @@ function priestSkills(target){
 
     //Priest heals himself
     if(character.hp < (character.max_hp * healingThreshold)
-        //&& can_heal(character)
+        && can_heal(character)
         && !is_on_cooldown("heal")){
         heal(character);
         game_log("Priest is healing himself");
@@ -40,6 +41,7 @@ function priestSkills(target){
                 && !partyMember.rip
                 //&& can_heal(partyMember)
                 && is_in_range(partyMember, "heal")
+                && !is_on_cooldown("attack")
                 && !is_on_cooldown("heal")){
                 heal(partyMember).then((message) => {
                     reduce_cooldown("heal", character.ping);
@@ -54,11 +56,12 @@ function priestSkills(target){
         && character.mp > (character.max_mp * manaReserve)
         && character.mp > G.skills.curse.mp
         && is_in_range(target, "curse")
-        && !is_on_cooldown("curse")){
+        && !is_on_cooldown("curse")
+        && !target.s.curse){
         use_skill("curse");
         game_log("Priest cursed the enemy");
     }
-    if(get_target_of(target) && get_target_of(target) !== character && is_in_range(target,"absorb") && !is_on_cooldown("absorb") && character.mp > G.skills.absorb.mp)
+    if(singleTarget && get_target_of(target) && get_target_of(target) !== character && is_in_range(target,"absorb") && !is_on_cooldown("absorb") && character.mp > G.skills.absorb.mp)
     {
         let friend = get_target_of(target);
         if(friend !== character){
