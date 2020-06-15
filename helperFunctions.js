@@ -1,23 +1,24 @@
 
 
 function loadCharacters(){
-	start_character("Matiin", "mainLoop");
-	start_character("Matiiin", "mainLoop");
-	//start_character("Matiiiin", "mainLoop");
+	start_character(warriorName, "mainLoop");
+	start_character(priestName, "mainLoop");
+	start_character(rangerName, "mainLoop");
 	log("Loading Characters...");
 	setTimeout(initParty, 8000);
 }
 
 function initParty(){
-	send_party_invite("Matiin");
-	send_party_invite("Matiiin");
-	send_party_invite("Matiiiin");
-	//send_party_invite("Matiiiiin");
+	send_party_invite(priestName);
+	send_party_invite(warriorName);
+	send_party_invite(rangerName);
+
 
 	log("Party Invites sent!");
 }
 
 function stopCharacters(){
+	stop_character("Matin");
 	stop_character("Matiin");
 	stop_character("Matiiin");
 	stop_character("Matiiiin");
@@ -56,7 +57,10 @@ function transferLoot(merchantName){
        //&& merchant.owner === character.owner
        && distance(character, merchant) < 400){
         //Transfer Gold
-        if(character.gold > 1000) send_gold(merchant, character.gold)
+		if(character.gold > reserveMoneyCombat)
+		{
+			send_gold(merchant, character.gold - reserveMoneyCombat)
+		}
         //Transfer Items
         if(character.items.filter(element => element).length > 4){
             for(let i = 0; i <= 41; i++){
@@ -101,20 +105,13 @@ function on_party_invite(name) {
 }
 
 
-// function usePotions(healthPotThreshold, manaPotThreshold){
-//     if(!character.rip
-//         && (character.hp < (character.max_hp - 200)
-//         || character.mp < (character.max_mp - 300))) use_hp_or_mp();
-// }
-
-
 function usePotions() 	//Replenish Health and Mana
 { 
 	if(character.rip) return;
 
 	let hPotGives = G.items[hPot].gives[0][1];
 	let mPotGives = G.items[mPot].gives[0][1];
-	if(character.hp < (character.max_hp - hPotGives) || character.mp < (character.max_mp - mPotGives)) 
+	if(character.hp < (character.max_hp - hPotGives) || character.mp < (character.max_mp - mPotGives) || character.mp < 50 || character.hp < 50) 
 	{
 	use_hp_or_mp();
 	}
@@ -215,7 +212,7 @@ function isAtFarmSpot()
 	}
 }
 
-function goBackToTown(delay)
+function goBackToTown(delay = 5000)
 {
 	if (returningToTown)
 	{
@@ -233,7 +230,7 @@ function goBackToTown(delay)
 	setTimeout(function ()
 	{
 		goTo(merchantStandMap, merchantStandCoords, () => { returningToTown = false });
-	}, 5000);
+	}, delay);
 }
 
 function goTo(mapName = "main", coords = { x: 0, y: 0 }, oncomplete = null)
@@ -321,7 +318,7 @@ function requestMluck()
 		sentRequests.push({ message: "mluck", name: merchantName });
 	}
 
-	let data = { message: "mluck", name: character.name };
+	let data = { message: "mluck", name: character.name, x: character.x, y: character.y, map: character.map};
 	send_cm(merchantName, data);
 }
 
@@ -434,8 +431,8 @@ function checkPotionInventory()
 			manaPotsNeeded = 0;
 		}
 
-		let potsList = { message: "buyPots", hPots: healthPotsNeeded, mPots: manaPotsNeeded };
-		send_cm(merchantName, potsList);
+		let data = { message: "buyPots", hPots: healthPotsNeeded, mPots: manaPotsNeeded, x: character.x, y: character.y, map: character.map };
+		send_cm(merchantName, data);
 
 		if (sentRequests.find((x) => { if (x.message == "potions") return x; }))
 		{
@@ -478,6 +475,7 @@ function checkPotionInventory()
 }
 
 function doCombat(){
+
 	if(!singleTarget)
 	{
 		target = engageTarget();
@@ -486,6 +484,7 @@ function doCombat(){
 	{
 		target = singleTargetCombat();
 	}
+	
 
 	if(target)
 	{
@@ -497,6 +496,7 @@ function doCombat(){
 		if(character.ctype === "mage") mageSkills(target);
 		if(character.ctype === "priest") priestSkills(target);
 		if(character.ctype === "ranger") rangerSkills(target, farmMonsterName);
+		if(character.ctype === "warrior") warriorSkills(target, farmMonsterName);
 		//Attacks the target
 		autoFight(target);
 	}
@@ -540,10 +540,6 @@ function singleTargetCombat()
 		target = engageTarget();
 	}
 	else
-	// {
-	// 	let testTarget = parent.entities["Matiiiin"];
-	// 	target = testTarget.target
-	// }
 	{
 	 	target = get_target_of(parent.entities[mainTank.name]);
 	}
@@ -590,20 +586,55 @@ function getTarget(farmTarget){
 }
 
 function autoFight(target){
+	if(!target) return;
 
     if(!is_in_range(target, "attack")){
         smart_move(
-            character.x + (target.x - character.x) * 0.3,
-            character.y + (target.y - character.y) * 0.3
+            character.x + (target.x - character.x) * 0.5,
+            character.y + (target.y - character.y) * 0.5
         );
-    }
-    else if (!is_on_cooldown("attack")){
-        attack(target).then((message) => {
-            reduce_cooldown("attack", character.ping*.95);
-        }).catch((message) => {
-            //log(character.name + " attack failed: " + message.reason);
-        });
-    }
+	}
+
+	// else if ( !is_on_cooldown("attack") )
+	// {
+	// 	{
+	// 		attack(target);
+	// 		reduce_cooldown("attack", character.ping*1.1);
+	// 	}
+	// }
+	
+	
+    // else if (!is_on_cooldown("attack")){
+		
+	// 	if(target.hp<1) return;
+	// 	else
+	// 	{
+	// 		attack(target).then((message) => 
+	// 		{
+	// 			let cooldownReduction = Math.min(character.ping, 250);
+	// 			reduce_cooldown("attack", cooldownReduction);
+	// 			log("reduced cooldown by " + cooldownReduction);
+	// 		})
+	// 		.catch((message) => 
+	// 		{
+	// 			if (message.reason ==="cooldown")
+	// 			{
+	// 				log(character.ctype + " attack failed: " + message.reason + " of "+ message.remaining);
+	// 			}
+	// 		});
+	// 	}
+	// }
+	
+	////	from egehawk	////
+	if (!is_on_cooldown("attack") && (!window.last_attack || mssince(window.last_attack) > 500)){
+		window.last_attack = new Date();
+		attack(target).then((message) => {
+			reduce_cooldown("attack", Math.min(character.ping, 250));
+			window.last_attack = new Date(0);
+		}).catch((message) => {
+			log(character.ctype + " attack failed: " + message.reason);
+		});
+	}
 }
 ////// CM //////
 
@@ -692,7 +723,7 @@ function compareWeapons(first, second)
 
 }
 
-function calc_frequency(ctype, dex, int, level, bonus_attackspeed=0, gear_attackspeed=0){
+function calc_frequency(ctype = character.ctype, dex = character.dex, int = character.int, level = character.level, bonus_attackspeed=0, gear_attackspeed=0){
 	// ctype: character class
 	// dex: Dexterity stat points
 	// int: Intelligence stat points
@@ -702,8 +733,6 @@ function calc_frequency(ctype, dex, int, level, bonus_attackspeed=0, gear_attack
 	let freq = 4/59/100*int + 12/99/100*dex + 2/3/100 * level + G.classes[ctype].frequency + bonus_attackspeed/100 + gear_attackspeed/100;
 	return freq;
 }
-
-
 
 // Shows some experience stats for your party
 function reportCard()
@@ -728,7 +757,6 @@ function on_combined_damage() // When multiple characters stay in the same spot,
 {
 	move(character.real_x + (Math.random()*50)-25, character.real_y + (Math.random()*50)-25);
 }
-
 
 // Reload code on character
 function reloadCharacter(name)
@@ -760,4 +788,87 @@ function reloadCharacters()
     {
         reloadCharacter(character.name);
     }, 1000);
+}
+
+// function on_hit(data){
+// 	log(data);
+// }
+
+
+
+// let totalDamage = 0;
+// let startDps = new Date();
+// let timeSince = 0;
+// let dps = 0;
+
+// character.on("target_hit", function(data){
+// 	totalDamage = totalDamage + data.damage;
+// 	dps = Math.round(totalDamage/timeSince*1000);
+// 	timeSince = mssince(startDps);
+	
+
+
+// });
+// setInterval(announceDPS, 300000);
+
+// function announceDPS()
+// {
+// 	log ( character.ctype +" " + dps + " dps | " + totalDamage + "  dmg | " + Math.round(timeSince/1000/60) + " min");
+// }
+
+
+
+// (() => {
+// 	// Register listener to cleanup when script terminates
+// 	window.addEventListener('unload', cleanup);
+// 	let recentCalls = [];
+// 	// Create a backup of original function persisted in parent
+// 	if (!parent.socketEmit) parent.socketEmit = parent.socket.emit;
+// 	// Extend original render_party() function
+// 	parent.socket.emit = (packet, data) => {
+// 	  recentCalls = recentCalls.filter(({ time }) => Date.now() - time < 4000);
+// 	  if (recentCalls.reduce((total, { id }) => packet === id ? total + 1 : total, 0) < 48) {
+// 		parent.socketEmit(packet, data);
+// 		recentCalls.push({ id: packet, time: Date.now() });
+// 	  } else {
+// 		console.error(`Blocked socket emit for ${packet} because of too many recent calls.`);
+// 	  }
+// 	};
+// 	function cleanup() {
+// 	  if (parent.socketEmit) parent.socket.emit = parent.socketEmit;
+// 	}
+// })();
+
+
+let touch_x = character.x;
+let touch_y = character.y;
+let center_x = 0;
+let center_y = 0;
+let pi = Math.PI;
+let radius = 100;
+
+function degrees() 
+{
+
+
+	let delta_x = touch_x - center_x;
+	let delta_y = touch_y - center_y;
+	let radians = Math.atan2(delta_y, delta_x) 
+	let degrees = radians * (180/pi) ;
+	return degrees;
+}
+	
+
+//////		from lotus		//////
+function circleSpawn()
+{
+	let center = {x:0, y:0};
+	let targetPos = {x:center.x,y:center.y};
+	let theta = Math.atan2(character.y - center.y, character.x - center.x) + (180/Math.PI);
+	let radius = 100;
+
+	targetPos.x += Math.cos(theta) * radius;
+	targetPos.y += Math.sin(theta) * radius;
+
+	move(targetPos.x, targetPos.y);
 }
