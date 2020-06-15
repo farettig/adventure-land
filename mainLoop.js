@@ -4,6 +4,7 @@ load_code(4);   //merchantSkills
 load_code(5);   //priestSkills
 load_code(6);   //rangerSkills
 load_code(8);   //evadeTarget
+load_code(9);   //warriorSkills
 
 //Hotkeys!
 map_key("5", "snippet", "loadCharacters()")
@@ -12,20 +13,29 @@ map_key("7", "snippet", "stopCharacters()")
 
 //Custom Settings
 //Farming spots are found in G.maps.main
+
 //const farmMonsterName = "bee";
 //const farmMap = "main";
 //const farmMonsterNr = 4;
 
-const farmMonsterName = "crabx";
-const farmMap = "main";
-const farmMonsterNr = 5;
-const specialMonsters = ["phoenix","snowman","goldenbat"];
-const singleTarget = false;
-// const farmMonsterName = "boar";
-// const farmMap = "winterland";
-// const farmMonsterNr = 8;
-// const specialMonsters = ["phoenix","snowman"];
+// const farmMonsterName = "crabx";
+// const farmMap = "main";
+// const farmMonsterNr = 5;
+// const singleTarget = false;
+
+const singleTarget = true;
+const farmMonsterName = "boar";
+const farmMap = "winterland";
+const farmMonsterNr = 8;
+
+// const singleTarget = false;
+// const farmMonsterName = "croc";
+// const farmMap = "main";
+// const farmMonsterNr = 6;
+
 // const singleTarget = true;
+
+const specialMonsters = ["phoenix","snowman","goldenbat"];
 
 
 //  Defining Characters
@@ -34,11 +44,11 @@ const priestName = "Matiiiin";
 const rangerName = "Matiin";
 const mageName = "Matiiin";
 const warriorName = "Matin";
-const partyList = [merchantName, priestName, rangerName, mageName];
+const partyList = [merchantName, priestName, rangerName, warriorName];
 const whiteList = ["Matin","Matiin","Matiiin","Matiiiin","Matiiiiin"];
 
 //  class of your main tank
-const mainTank = {name: priestName, class: "priest"};
+const mainTank = {name: warriorName, class: "warrior"};
 
 
 //  potion stuff
@@ -46,12 +56,13 @@ const mPot = "mpot1"
 const hPot = "hpot1"
 const mPotionThreshold = 2000;
 const hPotionThreshold = 500;
-const healthPotThreshold = 0.95
-const manaPotThreshold = 0.85;
+// const healthPotThreshold = 0.95
+// const manaPotThreshold = 0.85;
 const potionMax = 5000;
 
 //  inventory management
 const reserveMoney = 10000000;
+const reserveMoneyCombat = 5000000;
 const minNormalCompoundScrolls = 10;
 const minRareCompoundScrolls = 3;
 const minNormalUpgradeScrolls = 200;
@@ -110,7 +121,7 @@ function onStart()
 
 
 
-setInterval(main, 1000 / 4); // Loops every 1/4 seconds.
+setInterval(main, 100); // Loops every 1/10 seconds
 setInterval(tier2Actions, 3000); // Loops every 3 seconds.
 setInterval(respawnProcess, 15000)
 setInterval(tier3Actions, 7500);
@@ -138,7 +149,6 @@ function main(){
 
 function tier2Actions(){
         
-    //Puts potions on Slots not transferred to merchant
     relocateItems();
     //Transfer loot to merchant
     transferLoot(merchantName);
