@@ -11,7 +11,8 @@ function priestSkills(target){
     //Priest heals himself
     if(character.hp < (character.max_hp * healingThreshold)
         && can_heal(character)
-        && !is_on_cooldown("heal")){
+        && !is_on_cooldown("heal")
+        && !is_on_cooldown("attack")){
         heal(character);
         game_log("Priest is healing himself");
     }
@@ -57,22 +58,23 @@ function priestSkills(target){
         && character.mp > G.skills.curse.mp
         && is_in_range(target, "curse")
         && !is_on_cooldown("curse")
-        && !target.s.curse){
-        use_skill("curse");
-        game_log("Priest cursed the enemy");
-    }
-    if(singleTarget && get_target_of(target) && get_target_of(target) !== character && is_in_range(target,"absorb") && !is_on_cooldown("absorb") && character.mp > G.skills.absorb.mp)
+        && !target.s.curse)
     {
-        let friend = get_target_of(target);
-        if(friend !== character){
-            use_skill("absorb", friend);
-            game_log("Priest took aggro");
-        }
+        use_skill("curse");
+        // game_log("Priest cursed the enemy");
     }
+    // if(singleTarget && get_target_of(target) && get_target_of(target) !== character && is_in_range(target,"absorb") && !is_on_cooldown("absorb") && character.mp > G.skills.absorb.mp)
+    // {
+    //     let friend = get_target_of(target);
+    //     if(friend !== character){
+    //         use_skill("absorb", friend);
+    //         game_log("Priest took aggro");
+    //     }
+    // }
 
     if(character.level > 69 && !is_on_cooldown("darkblessing") && character.mp > G.skills.darkblessing.mp)
     {
-        use_skill("darkblessing",parent.entities["Matiiin"]);
+        use_skill("darkblessing");
 
     }
 
