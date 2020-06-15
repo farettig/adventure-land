@@ -1,7 +1,7 @@
 function rangerSkills(target, farmMonsterName){
 
     //How much Mana should be kept in reserve
-    let manaReserve = 0.8;
+    let manaReserve = 0.1;
 
     //Use Ranger Skills
     if(character.mp > (character.max_mp * manaReserve)){
