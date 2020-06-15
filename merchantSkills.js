@@ -14,6 +14,10 @@ function merchantOnStart()
 function merchantSkills(){
 	
 
+	if(is_moving(character) || smart.moving || deliveryMode)
+	{
+		return;
+	}
 
 	if(vendorMode){
 	sellTrash();
@@ -203,7 +207,6 @@ function depositItems(){
 	}
 }
 
-
 function upgradeItems(){
 	if(character.q.upgrade || (quantity("scroll0") < 1) || (quantity("scroll1") < 1)){
 		//log("Already combining something!");
@@ -316,7 +319,6 @@ function buyCheapStuff(){
 	}
 }
 
-
 function openMerchantStand(){
 //Go to the market and sell things
 	if(character.map != "main"){
@@ -350,7 +352,7 @@ function merchant_on_cm(sender, data)
 		}
 
 		log("Recieved potion request from " + sender);
-		deliveryRequests.push({ request: "potions", sender: sender, shipment: null, hPots: data.hPots, mPots: data.mPots });
+		deliveryRequests.push({ request: "potions", sender: sender, shipment: null, hPots: data.hPots, mPots: data.mPots, x: data.x, y: data.y, map: data.map });
 	}
 	else if (data.message == "mluck")
 	{
@@ -361,7 +363,7 @@ function merchant_on_cm(sender, data)
 		}
 
 		log("Recieved mluck request from " + sender);
-		deliveryRequests.push({ request: "mluck", sender: sender });
+		deliveryRequests.push({ request: "mluck", sender: sender, x: data.x, y: data.y, map: data.map });
 	}
 	else if (data.message == "thanks")
 	{
@@ -418,6 +420,10 @@ function checkRequests()
 	if (deliveryRequests.length == 0)
 	{
 		deliveryMode = false;
+		if ( !isInTown )
+		{	
+			goBackToTown();
+		}
 		return;
 	}
 
@@ -436,15 +442,16 @@ function checkRequests()
 			//	deliver to recipient
 			else if (deliveryRequests[i].shipment || deliveryRequests[i].request == "mluck")
 			{
-				let recipient = parent.entities[deliveryRequests[i].sender];
-				if (recipient)
+				let recipient = deliveryRequests[i];
+				
+				if (recipient && !is_moving(character))
 				{
-					approachTarget(recipient);
+					moveToRequest(recipient);
 				}
-				else
-				{
-					requestTeleport();
-				}
+				// else
+				// {
+				// 	requestTeleport();
+				// }
 			}
 		}
 	}
@@ -555,6 +562,7 @@ function deliverItems(shipmentToDeliver)
 		deliverElixir(shipmentToDeliver);
 	}
 }
+
 function deliverPotions(shipment)
 {
 	let recipient = parent.entities[shipment.name];
@@ -574,6 +582,29 @@ function deliverPotions(shipment)
 	}
 }
 
+
+function moveToRequest(request)
+{
+	if (!request)
+	{
+		return;
+	}
+	else
+	{
+		if ( character.map !== request.map )
+		{
+			smart_move({ to: request.map }, () => 
+				{
+					smart_move({ x: request.x, y: request.y });
+				}
+			);
+		}
+		else
+		{
+			smart_move({ x: request.x, y: request.y });
+		}
+	}
+}
 
 
 // function merchantAuto(target)
