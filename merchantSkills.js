@@ -13,6 +13,7 @@ function merchantOnStart()
 
 function merchantSkills(){
 	
+	// specialParty();
 
 	if(is_moving(character) || smart.moving || deliveryMode)
 	{
@@ -27,10 +28,9 @@ function merchantSkills(){
 	upgradeItems();
 	buyScrolls();
 	// buyVendorUpgrade();
+	pontyPurchase();
+	exchangeGems();
 
-	//searchItems2bSold Returns Array SLOTS. Therefor it can return ZEROES
-	//So we have to specifically look for UNDEFINED
-	//if(searchItems2bSold(sellItemLevel) !== undefined && findEmptyTradeSlots() !== undefined) sellItems(sellItemLevel, profitMargin);
 
 	
 	//compound process
@@ -166,14 +166,19 @@ function sellTrash(){
 	
 	for(let i = 0; i <= 41; i++){
 		if(character.items[i]
-		   && trashName.indexOf(character.items[i].name) !== -1
-		   && !item_grade(character.items[i]) > 0) {
+		   && (trashName.indexOf(character.items[i].name) !== -1)
+		   && (!item_grade(character.items[i]) > 0)
+		   && (!character.items[i].p)) 
+		{
 			log("Merchant is unloading trash: " + character.items[i].name);
-			if(G.items[character.items[i].name].type === "material"){
-				sell(i, character.items[i].q);
-			}else{
+			// if(G.items[character.items[i].name].type === "material")
+			// {
+			// 	sell(i, character.items[i].q);
+			// }
+			// else
+			// {
 				sell(i, character.items[i]);
-			}
+			// }
 		}
 	}		
 }
@@ -181,10 +186,12 @@ function sellTrash(){
 function exchangeGems(){
 	for(let i = 0; i <= 41; i++){
 		if(character.items[i]
-		  && (G.items[character.items[i].name].type === "gem"
-		  || G.items[character.items[i].name].type === "box")){
+			&& (character.items[i].q > 1)
+			&& (G.items[character.items[i].name].type === "gem"
+		//   || G.items[character.items[i].name].type === "box"
+		  )){
 			exchange(i);
-			log("Item Exchanged!");
+			// log("Item Exchanged!");
 		}
 	}
 }
@@ -208,33 +215,38 @@ function depositItems(){
 }
 
 function upgradeItems(){
-	if(character.q.upgrade || (quantity("scroll0") < 1) || (quantity("scroll1") < 1)){
+	if(character.q.upgrade || (quantity("scroll0") < 1) || (quantity("scroll1") < 1))
+	{
 		//log("Already combining something!");
 		return;
 	}
-	for(let i = 0; i <= 41; i++){
+	for(let i = 0; i <= 41; i++)
+	{
 		if(character.items[i]
 		&& (character.items[i].level < upgradeItemLevel1)
+		&& (!character.items[i].p)
 		&& upgradeItemList.includes(character.items[i].name)
-		&& item_grade(character.items[i]) < 1 ){
+		&& item_grade(character.items[i]) < 1 )
+		{
 			log("Upgrade Started for item " + G.items[character.items[i].name].name + " +" + character.items[i].level);
 			upgrade(i,locate_item("scroll0"));
 			return;
-			
-		}else{
+		}
+		else
+		{
 			if(character.items[i]
 				&& (character.items[i].level < upgradeItemLevel2)
-				&& upgradeItemList.includes(character.items[i].name)){
+				&& (!character.items[i].p)
+				&& upgradeItemList.includes(character.items[i].name))
+				{
 					log("Upgrade Started for item " + G.items[character.items[i].name].name + " +" + character.items[i].level);
 					upgrade(i,locate_item("scroll1"));
 					return;
-
-			}
+				}
 		}
 	}
 
 }
-
 
 function compoundItems(level){
 	if(character.q.upgrade){
@@ -250,12 +262,12 @@ function compoundItems(level){
 	}
 }
 
-
 function findTriple(level){
 	let compoundTriple = [];
 	for(let i = 0; i <= 41; i++){
 		if(character.items[i]
-		   	&& character.items[i].level === level
+			   && character.items[i].level === level
+			   && (!character.items[i].p)
 		   	//Weapons can't be compounded. If item has attack attr, no compound
 			 //&& !G.items[character.items[i].name].attack
 			 && G.items[character.items[i].name].compound
@@ -263,10 +275,12 @@ function findTriple(level){
 			for(let j = i + 1; j <= 41; j++){
 				if(character.items[j]
 				   && character.items[j].name === character.items[i].name
+				   && (!character.items[i].p)
 				   && character.items[j].level === level){
 					for(let k = j + 1; k <= 41; k++){
 						if(character.items[k]
 						   && character.items[k].name === character.items[j].name
+						   && (!character.items[i].p)
 						   && character.items[k].level === level){
 							log(" Slot i: "  + i + " item: " + character.items[i].name + " Slot j: "  + j + " item: " + character.items[j].name + " Slot k: "  + k + " item: " + character.items[k].name )
 							compoundTriple.push(i, j, k);
@@ -278,7 +292,6 @@ function findTriple(level){
 		}
 	}
 }
-
 
 function findEmptyTradeSlots(){
 	let tradeSlots = Object.keys(character.slots).filter(tradeSlot => tradeSlot.includes("trade"));
@@ -474,7 +487,6 @@ function getShipmentFor(name)
 
 	return null;
 }
-
 
 function standCheck()
 {
@@ -744,4 +756,64 @@ function merchantAuto(target)
 			}
 		}
 	}
+}
+
+function specialParty()
+{
+	if ( !parent.party_list.includes("Maela") )
+	{
+		leave_party();
+	}
+}
+
+
+// Adapted From Lotus
+
+function pontyPurchase()
+{
+	// parent.socket.emit("secondhands");
+    let itemsToBuy = buyFromPonty;
+    parent.socket.once("secondhands", function (data)
+    {    
+        for (let pontyItem of data)
+        {
+            let buy = false;
+            if (pontyItem.p)
+            {
+                log("Found shiny ponty item : " + G.items[pontyItem.name].name);
+                buy = true;
+            }
+
+            if ( (buyFromPonty.includes(pontyItem.name)) && (!trashName.includes(pontyItem.name)) )
+            {
+            //     if (upgradeItemList.includes(pontyItem.name) || combineItemList.includes(pontyItem.name))
+            //     {
+            //         if (upgradeItemList.includes(pontyItem.name) && (pontyItem.level <= upgradeItemLevel2))
+            //         {
+            //             buy = true;
+            //             log("found upgrade item at ponty " + pontyItem.name)
+            //         }
+            //         else if (combineItemList.includes(pontyItem.name) && (pontyItem.level <= 3))
+            //         {
+            //             buy = true;
+            //             log("found compound item at ponty " + pontyItem.name)
+            //         }
+            //     }
+            // }
+                
+            // else
+            // {
+                buy = true;
+            }
+
+            if (buy)
+            {
+                log("Buying " + G.items[pontyItem.name].name + " from Ponty!");
+                parent.socket.emit("sbuy", { "rid": pontyItem.rid })
+            }
+            
+        }
+    });
+
+    parent.socket.emit("secondhands");
 }

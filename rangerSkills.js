@@ -1,16 +1,18 @@
 function rangerSkills(target, farmMonsterName){
 
+    if (singleTarget && ((target.target == character.name) || !target.target)) return;
+
     //How much Mana should be kept in reserve
-    let manaReserve = 0.1;
+    let manaReserve = .05;
 
     //Use Ranger Skills
     if(character.mp > (character.max_mp * manaReserve)){
         //3-Shot7
         if(character.mp > G.skills["3shot"].mp
             && !is_on_cooldown("attack")
-            && !singleTarget){
-            let targets = Object.values(parent.entities).filter(entity => entity.mtype === farmMonsterName && is_in_range(entity, "3shot"));
-            if(targets.length >= 3) use_skill("3shot", targets);
+            && (!singleTarget || Spadar)){
+            let targets = Object.values(parent.entities).filter(entity => entity.mtype === farmMonsterName && is_in_range(entity, "3shot") && entity.target);
+            if(targets.length >= 2) use_skill("3shot", targets);
             //game_log("Ranger used 3-Shot");
         }
         //Supershot

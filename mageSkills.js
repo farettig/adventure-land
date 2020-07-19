@@ -31,16 +31,28 @@ function mageSkills(target){
 				//game_log("Mage shielded " + partyMember.name);
 			}
 			//Energize Partymenber
-			if(character.mp > (character.max_mp * manaReserve)
-			   	&& partyMember.mp < (partyMember.max_mp * manaReserve)
-			   	&& !partyMember.rip
-			   	&& is_in_range(partyMember, "energize")
-			  	&& !is_on_cooldown("energize")){
-				use_skill("energize", partyMember);
-				//game_log("Mage energized " + partyMember.name);
-			}
+			// if(character.mp > (character.max_mp * manaReserve)
+			//    	&& partyMember.mp < (partyMember.max_mp * manaReserve)
+			//    	&& !partyMember.rip
+			//    	&& is_in_range(partyMember, "energize")
+			//   	&& !is_on_cooldown("energize")){
+			// 	use_skill("energize", partyMember);
+			// 	//game_log("Mage energized " + partyMember.name);
+			// }
 		}
 	});
+
+			// Energize Partymenber
+	let energizeTarget = get_entity(rangerName);	
+	if(character.mp > (character.max_mp * .1)
+		&& energizeTarget.mp < (energizeTarget.max_mp * manaReserve)
+		&& !energizeTarget.rip
+		&& is_in_range(energizeTarget, "energize")
+		&& !is_on_cooldown("energize")){
+		use_skill("energize", energizeTarget.name);
+		//game_log("Mage energized " + partyMember.name);
+	}
+
 
 /* 	
 //Burst

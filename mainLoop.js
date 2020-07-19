@@ -1,15 +1,3 @@
-load_code(2);   //helperFunctions
-load_code(3);   //mageSkills
-load_code(4);   //merchantSkills
-load_code(5);   //priestSkills
-load_code(6);   //rangerSkills
-load_code(8);   //evadeTarget
-load_code(9);   //warriorSkills
-
-//Hotkeys!
-map_key("5", "snippet", "loadCharacters()")
-map_key("6", "snippet", "initParty()")
-map_key("7", "snippet", "stopCharacters()")
 
 //Custom Settings
 //Farming spots are found in G.maps.main
@@ -23,19 +11,62 @@ map_key("7", "snippet", "stopCharacters()")
 // const farmMonsterNr = 5;
 // const singleTarget = false;
 
-const singleTarget = true;
-const farmMonsterName = "boar";
-const farmMap = "winterland";
-const farmMonsterNr = 8;
+// //  boars
+// const stationary = false;
+// const singleTarget = true;
+// const farmMonsterName = "boar";
+// const farmMap = "winterland";
+// const farmMonsterNr = 8;
 
+
+// // Hawks
+// const stationary = false;
+// const singleTarget = true;
+// const farmMonsterName = "bigbird";
+// const farmMap = "main";
+// const farmMonsterNr = 5;
+
+
+// Wolf
+const stationary = false;
+const singleTarget = true;
+const farmMonsterName = "wolf";
+const farmMap = "winterland";
+const farmMonsterNr = 7;
+const Spadar = false;
+
+// // ent
+// const stationary = false;
+// const singleTarget = true;
+// const farmMonsterName = "ent";
+// const farmMap = "desertland";
+// const farmMonsterNr = 3;
+// const mainTank = {name: "Maela", class: "warrior"};
+// const Spadar = true;
+
+
+// const stationary = false;
+// const singleTarget = true;
+// const farmMonsterName = "gredpro";
+// const farmMap = "mansion_u";
+// const farmMonsterNr = 1;
+
+// //  crocs
+// const stationary = false;
 // const singleTarget = false;
 // const farmMonsterName = "croc";
 // const farmMap = "main";
 // const farmMonsterNr = 6;
 
-// const singleTarget = true;
 
-const specialMonsters = ["phoenix","snowman","goldenbat"];
+
+// const stationary = true;
+// const singleTarget = false;
+// const farmMonsterName = "rat";
+// const farmMap = "mansion";
+// const farmMonsterNr = 5;
+
+const specialMonsters = ["snowman","goldenbat","stompy"]; 
 
 
 //  Defining Characters
@@ -44,7 +75,7 @@ const priestName = "Matiiiin";
 const rangerName = "Matiin";
 const mageName = "Matiiin";
 const warriorName = "Matin";
-const partyList = [merchantName, priestName, rangerName, warriorName];
+const partyList = [priestName, rangerName, warriorName,merchantName]; //merchantName  merchantName
 const whiteList = ["Matin","Matiin","Matiiin","Matiiiin","Matiiiiin"];
 
 //  class of your main tank
@@ -61,7 +92,7 @@ const hPotionThreshold = 500;
 const potionMax = 5000;
 
 //  inventory management
-const reserveMoney = 10000000;
+const reserveMoney = 50000000;
 const reserveMoneyCombat = 5000000;
 const minNormalCompoundScrolls = 10;
 const minRareCompoundScrolls = 3;
@@ -69,11 +100,13 @@ const minNormalUpgradeScrolls = 200;
 const minRareUpgradeScrolls = 5;
 const inventoryMax = 31;
 const merchantStandMap = "main";
-const merchantStandCoords = {x:-100, y:-50};
+const merchantStandCoords = {x:-127, y:-124};
 const itemsToKeep = [mPot, hPot, "tracker"];
+const equipmentToKeep = ["sshield","fireblade"];
 
-const trashName = ["hpbelt","hpring","hpearring","hpamulet","vitscroll","vitearring","vitring","ringsj",
-                    "cclaw"];
+
+const trashName = ["hpbelt","hpring","hpearring","hpamulet","vitearring","vitring","ringsj",
+                    "wattire","wgloves","wbreeches","wshoes","wcap","stinger"];
 
 
 
@@ -88,18 +121,21 @@ const profitMargin = 1.8;
 const manaReserve = 0.2;
 const mluckDuration = 3600000;
 
-const upgradeItemList = ["wattire","wgloves","wbreeches","wshoes","wcap","bow","staff","pants1",
-                        "helmet","shoes","gloves","pants","coat","quiver","wbasher","xmashat"];
-const combineItemList = ["intring","strring","dexring","vitring"];
+const upgradeItemList = ["bow","staff","helmet","shoes","gloves","pants","coat","quiver","wbasher","xmashat",
+                        "eslippers","eears", "epyjamas","helmet1","coat1","gloves1","pants1","t2bow","carrotsword","merry","cclaw"];
+const combineItemList = ["intring","strring","dexring"];
 const vendorUpgradeList = ["shoes","gloves","helmet","coat","wbasher"]; 	
 const specialItems = ["firestaff","firesword","seashell","offering","essenceofire","leather"];
 
-let merchantStatus = {idle: true, hasBeenTeleported: false};
-let mluckRecently = false;
-let hpRecently = false;
-let mpRecently = false;
-let requestFulfilled = false;
-let requestedSomething = false;
+const buyFromPonty = ["intring","strring","dexring","intearring","strearring","dexearring","intamulet","stramulet","dexamulet","intbelt","strbelt","dexbelt","wbook0",
+                        "helmet1","coat1","gloves1","pants1","hhelmet","harmor","hpants","hgloves","cclaw","rattail","sshield"];
+
+// let merchantStatus = {idle: true, hasBeenTeleported: false};
+// let mluckRecently = false;
+// let hpRecently = false;
+// let mpRecently = false;
+// let requestFulfilled = false;
+// let requestedSomething = false;
 
 const craftingEnabled = true;
 var craftingOn = craftingEnabled;
@@ -109,6 +145,23 @@ var returningToTown = false;
 var traveling = false;
 let sentRequests = [];
 
+
+load_code(2);   //helperFunctions
+load_code(3);   //mageSkills
+load_code(4);   //merchantSkills
+load_code(5);   //priestSkills
+load_code(6);   //rangerSkills
+load_code(8);   //evadeTarget
+load_code(9);   //warriorSkills
+load_code(11);  //logging
+if (character.ctype == mainTank.class) load_code(12);  //GUI
+
+//Hotkeys!
+map_key("5", "snippet", "loadCharacters()")
+map_key("6", "snippet", "initParty()")
+map_key("7", "snippet", "stopCharacters()")
+
+
 //  called on initialization
 onStart();
 function onStart()
@@ -117,13 +170,16 @@ function onStart()
     {
         merchantOnStart();
     }
+    let data = "Client Started"
+    writeToLog(data);
+    respawnProcess();
 }
 
 
 
 setInterval(main, 100); // Loops every 1/10 seconds
 setInterval(tier2Actions, 3000); // Loops every 3 seconds.
-setInterval(respawnProcess, 15000)
+setInterval(respawnProcess, 15000);
 setInterval(tier3Actions, 7500);
 
 function main(){
@@ -132,14 +188,20 @@ function main(){
     if (character.rip) setTimeout(respawn, 15000);  
 
     //  finish what you are doing before checking past here
-    if (is_moving(character) || smart.moving || returningToTown || character.q.upgrade || character.q.compound)     return;
+    if ( smart.moving || returningToTown )     return;
+    // if (is_moving(character) || smart.moving || returningToTown )     return;
+
      
     if (character.name == merchantName)     standCheck();
 
     //Replenish Health and Mana
     usePotions();
     //Loot everything
-    loot();
+    if (!Spadar)
+    {
+        loot();
+    }
+    
     
     //Merchant Skills are Tier 2 actions
     if(character.ctype === "merchant") return;
@@ -172,12 +234,40 @@ function tier3Actions(){
     checkRequests();
 }
 
-function respawnProcess(){
+function respawnProcess()
+{
     if(character.ctype === "merchant") return;
    
-    if (parent.party_list.length < 3){
-        setTimeout(loadCharacters());
-        setTimeout(initParty(), 4000);
-    }
+    if ( parent.party_list.length < partyList.length)
+    {
+        for (let p of partyList)
+	    {
+            if ( !parent.party_list.includes(p) )
+            {
+                if ( (p !== character.name) && (p !== merchantName) )  
+                {
+                    loadCharacter(p);
+                    log(p+"loading");   
+                }
+                
+                setTimeout(send_party_invite, 3000, p );                
+            }
+        }
+	}
+} 
+    
 
-}    
+// character.on("level_up",function(data){
+// 	writeToLog("New Level "+data.level);
+// });
+
+// character.on("target_hit",function(data){
+//     let targetHit = get_entity(data.target); 
+//     if (data.source !== "undefined")
+//     {
+//         writeToLog(
+//             "target="+targetHit.name+" damage="+data.damage+" source="+data.source
+//         );
+//     }
+
+// });

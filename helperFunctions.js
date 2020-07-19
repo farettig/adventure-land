@@ -1,17 +1,26 @@
 
 
+// load all dudes
 function loadCharacters(){
-	start_character(warriorName, "mainLoop");
+	//start_character(warriorName, "mainLoop");
 	start_character(priestName, "mainLoop");
 	start_character(rangerName, "mainLoop");
 	log("Loading Characters...");
 	setTimeout(initParty, 8000);
 }
 
+// load a single dude
+function loadCharacter(name){
+	start_character(name, "mainLoop");
+}
+
+
 function initParty(){
 	send_party_invite(priestName);
 	send_party_invite(warriorName);
 	send_party_invite(rangerName);
+	send_party_invite(merchantName);
+	send_party_invite(mageName);
 
 
 	log("Party Invites sent!");
@@ -66,12 +75,17 @@ function transferLoot(merchantName){
             for(let i = 0; i <= 41; i++){
 				if(character.items[i] && (!itemsToKeep.includes(character.items[i].name)))
 				{
-					send_item(merchantName, i, 9999);
-					log(character.name + " sent items to merchant.");
+					if ( equipmentToKeep.includes(character.items[i].name) && (character.items[i].level > 2) ) 
+					{
+						return;
+					}
+					else
+					{
+						send_item(merchantName, i, 9999);
+						log(character.name + " sent items to merchant.");
+					}
 				}
-               
             }
-            
         }
     }   
 }
@@ -97,9 +111,11 @@ function relocateItems()
 }
 
 //on_party_invite gets called _automatically_ by the game on an invite 
-function on_party_invite(name) {
+function on_party_invite(name) 
+{
 
-	if (whiteList.includes(name)){
+	if ( whiteList.includes(name) )
+	{
 		accept_party_invite(name);
 	}
 }
@@ -130,7 +146,7 @@ function getHolidayBuff(){
 }
 
 function restoreParty(){
-	if(parent.party_list.length < 4){
+	if(parent.party_list.length < 3){
 		log("Restoring party.");
 		loadCharacters();
 		log("Party Restored.");
@@ -189,7 +205,7 @@ function hasUpgradableItems()
 
 function isInTown()
 {
-	if((character.map == merchantStandMap && distance(character, merchantStandCoords) < 1000))
+	if((character.map == merchantStandMap && simple_distance(character, merchantStandCoords) < 1000))
 	{
 		return true;
 	}
@@ -202,7 +218,7 @@ function isInTown()
 function isAtFarmSpot()
 {
 	let farmspot = getFarmingSpot(farmMonsterName, farmMap, farmMonsterNr,"coord");
-	if(character.map == farmMap && distance(character, farmspot) < 300)
+	if(character.map == farmMap && distance(character, farmspot) < 400)
 	{
 		return true;
 	}
@@ -225,7 +241,7 @@ function goBackToTown(delay = 5000)
 
 	returningToTown = true;
 
-	use("use_town");
+	use_skill("town");
 
 	setTimeout(function ()
 	{
@@ -476,12 +492,19 @@ function checkPotionInventory()
 
 function doCombat(){
 
+
 	if(!singleTarget)
 	{
 		target = engageTarget();
 	}
+	else if (Spadar)
+	{
+		ToT = "Brutus"
+		target = get_target_of(parent.entities[ToT]);
+	}
 	else
 	{
+		approachLeader();
 		target = singleTargetCombat();
 	}
 	
@@ -535,7 +558,7 @@ function singleTargetCombat()
 {
 	let target = null;
 	
-	if(character.ctype === mainTank.class)
+	if(character.name == mainTank.name)
 	{
 		target = engageTarget();
 	}
@@ -553,32 +576,32 @@ function getTarget(farmTarget){
 	let target = get_targeted_monster();
 	if(target) return target;
 	
-	if(!target){
+	if(!target)
+	{
 		//Returns monster that targets character
-		target = get_nearest_monster({
-			target:character.name
-		});
-		if(target){
+		target = get_nearest_monster({target:character.name});
+		if(target)
+		{
 			change_target(target);
 			return target;
 		}
 		//Returns monster that targets party-member
-		parent.party_list.forEach(partyMemberName => {
-			target = get_nearest_monster({
-				target:partyMemberName
-			});
-			if(target){
+		partyList.forEach(element => {
+			target = get_nearest_monster({target:element});
+			if(target)
+			{
 				change_target(target);
 				return target;
 			}
 		});
 		//Returns any monster that targets nobody
 		target = get_nearest_monster({
-			//max_att:150,
-			type:farmTarget,
-			no_target:true
+			
+			//no_target:false,
+			type:farmTarget
 		});
 		if(target){
+			//log("finding a target no one is fighting");
 			change_target(target);
 			return target;
 		}
@@ -588,11 +611,28 @@ function getTarget(farmTarget){
 function autoFight(target){
 	if(!target) return;
 
-    if(!is_in_range(target, "attack")){
-        smart_move(
-            character.x + (target.x - character.x) * 0.5,
-            character.y + (target.y - character.y) * 0.5
-        );
+	if(specialMonsters.includes(target.mtype) && (character.ctype === "warrior"))
+	{
+		if(target.mtype === "stompy")
+		{
+			move(422,-2423)
+		}
+	}
+
+	if(!is_in_range( target, "attack"))
+	{
+		if (stationary)
+		{
+			target = get_nearest_monster({type:farmMonsterName});
+			change_target(target);
+		}
+		else
+		{
+			move(
+				character.x + (target.x - character.x) * 0.2,
+				character.y + (target.y - character.y) * 0.2
+			);
+		}
 	}
 
 	// else if ( !is_on_cooldown("attack") )
@@ -627,12 +667,15 @@ function autoFight(target){
 	
 	////	from egehawk	////
 	if (!is_on_cooldown("attack") && (!window.last_attack || mssince(window.last_attack) > 500)){
+		if (character.ctype === "warrior") equipWeapon();
 		window.last_attack = new Date();
 		attack(target).then((message) => {
 			reduce_cooldown("attack", Math.min(character.ping, 250));
 			window.last_attack = new Date(0);
+			if (character.ctype === "warrior") equipShield();
 		}).catch((message) => {
-			log(character.ctype + " attack failed: " + message.reason);
+		//	log(character.ctype + " attack failed: " + message.reason);
+			if (character.ctype === "warrior") equipShield();
 		});
 	}
 }
@@ -670,12 +713,6 @@ function on_cm(sender, data)
 
 //////		Extra functions		//////
 
-function characterMainhand()
-{
-	let cMainhand = character.slots.mainhand;
-	let output = item_properties(cMainhand).attack;
-	return output;
-}
 
 function findWeaponDamage(itemName, upgradeLevel, outputMethod=true)
 {
@@ -689,6 +726,13 @@ function findWeaponDamage(itemName, upgradeLevel, outputMethod=true)
 	{
 		return output;
 	}
+}
+
+function characterMainhand()
+{
+	let cMainhand = character.slots.mainhand;
+	let output = item_properties(cMainhand).attack;
+	return output;
 }
 
 function characterMainstat()
@@ -840,35 +884,165 @@ function reloadCharacters()
 // })();
 
 
-let touch_x = character.x;
-let touch_y = character.y;
-let center_x = 0;
-let center_y = 0;
-let pi = Math.PI;
-let radius = 100;
 
-function degrees() 
-{
-
-
-	let delta_x = touch_x - center_x;
-	let delta_y = touch_y - center_y;
-	let radians = Math.atan2(delta_y, delta_x) 
-	let degrees = radians * (180/pi) ;
-	return degrees;
-}
 	
 
 //////		from lotus		//////
-function circleSpawn()
+function circleCoords(x=0, y=0, radius=100)
 {
-	let center = {x:0, y:0};
-	let targetPos = {x:center.x,y:center.y};
-	let theta = Math.atan2(character.y - center.y, character.x - center.x) + (180/Math.PI);
-	let radius = 100;
-
+	
+	let targetPos = {x:x,y:y};
+	let theta = Math.atan2(character.y - targetPos.y, character.x - targetPos.x) + (180/Math.PI);
 	targetPos.x += Math.cos(theta) * radius;
 	targetPos.y += Math.sin(theta) * radius;
 
 	move(targetPos.x, targetPos.y);
 }
+
+
+function upgradeChance()
+{
+	let probability = 1;
+	for (let i = 0; i < baseChance.length; i++)
+	{
+		probability = (baseChance[i]/100) * probability
+		log(" total probability for +" + (i+1) + " is "+ Math.round((probability*100)*1000)/1000 + "% chance")
+	}
+}
+
+adjustedBaseChance = [100.00,   98.00,   95.00,   71.26,   61.42,   41.38,   52.7,   31.02,   15.1,   6.5,   28.00,   22.00,];
+function adjustedUpgradeChance()
+{
+	let probability = 1;
+	for (let i = 0; i < adjustedBaseChance.length; i++)
+	{
+		probability = (adjustedBaseChance[i]/100) * probability
+		log(" total probability for +" + (i+1) + " is "+ Math.round((probability*100)*1000)/1000 + "% chance")
+	}
+}
+
+function equipWeapon()
+{
+	if (character.slots.offhand.name === "sshield")
+	{
+
+		equip(40,"offhand")
+	}
+	else if (character.slots.offhand.name === "fireblade")
+	{
+		// do nothing
+		return;
+	}
+}
+
+function equipShield()
+{
+	if (character.slots.offhand.name === "fireblade")
+	{
+		
+		equip(40,"offhand")
+	}
+	else if (character.slots.offhand.name === "sshield")
+	{
+		// do nothing
+		return;
+	}
+}
+
+
+function approachLeader()
+{
+	if (character.name !== mainTank.name)
+	{
+		let leaderEntity = get_player(mainTank.name);
+		if (character.name == rangerName && Spadar) leaderEntity = get_player("SpadarFaar");
+		if (leaderEntity && isAtFarmSpot() &&  (distance(character,leaderEntity) > 10) )
+		{
+			move(
+				character.x + (leaderEntity.x - character.x) * 0.2,
+				character.y + (leaderEntity.y - character.y) * 0.2
+			);
+		}
+
+
+	}
+}
+
+
+// browser-like zoom functionality for steam client
+(function () {    
+    if (typeof require !== 'undefined') {
+        const { webFrame } = require('electron');
+        class Zoom {
+            constructor() {
+                this.zoom_factors = [0.25, 0.5, 0.67, 0.75, 0.8, 0.9, 1, 1.1, 1.25, 1.5, 2, 2.5, 3, 4, 5];
+                this.index = this.zoom_factors.findIndex(value => value >= webFrame.getZoomFactor());
+            }
+            zoom_in() {
+                if (this.index + 1 < this.zoom_factors.length) this.index++;
+                webFrame.setZoomFactor(this.zoom_factors[this.index]);
+            }
+            zoom_out() {
+                if (this.index > 0) this.index--; 
+                webFrame.setZoomFactor(this.zoom_factors[this.index]);
+            }
+        }
+        var zoom = new Zoom();
+        var is_control_down = false;
+        parent.window.addEventListener("keydown", function (event) {
+            if (event.key == "Control") is_control_down = true;
+            if (event.repeat) return; // key is still pressed down
+            if (is_control_down && event.key == "=") zoom.zoom_out();
+            if (is_control_down && event.key == "-") zoom.zoom_in();
+        });
+        parent.window.addEventListener("keyup", function (event) {
+            if (event.key == "Control") is_control_down = false;
+        });
+        parent.window.addEventListener("wheel", function (event) {
+            if (!is_control_down) return;
+            if (event.deltaY < 0) { zoom.zoom_in(); }
+            else { zoom.zoom_out(); }
+        });
+    }
+})();
+
+
+//		from Mish		//
+/*
+move: (target, opt) => {
+	opt = opt || {}
+	if (target === null) return;
+	const movedRecently = mssince(last_move) < (opt.delay || 2000)
+	if (!movedRecently || !is_in_range(target)) {
+		for (var iAngle = 0; iAngle < 360; iAngle = iAngle + 15) {
+			const distance = opt.range || character.range;
+			for (var jRange = 0; (jRange + 15) < distance; jRange = jRange + 15) {
+				const angle = (opt.angle || 180) + (opt.relative ? target.angle : getAngle(character, target).angleDeg) + iAngle;
+				const toRad = ((Math.PI) / 180);
+
+				const x = Math.cos(angle * toRad) * (distance - jRange);
+				const y = Math.sin(angle * toRad) * (distance - jRange);
+				const targetX = target.x
+				const targetY = target.y
+				const gotoX = targetX + x
+				const gotoY = targetY + y
+				const deltaX = gotoX - character.going_x;
+				const deltaY = gotoY - character.going_y;
+				if (gotoX === character.going_x && gotoY === character.going_y) return;
+				const ddist = Math.sqrt(Math.pow(deltaX, 2) + Math.pow(deltaY, 2));
+				if (ddist < 5) return;
+				if (!can_move_to(gotoX, gotoY)) {
+					continue;
+				}
+				move(
+					gotoX,
+					gotoY
+				)
+				last_move = new Date();
+				return;
+			}
+		}
+	}
+}
+
+*/
