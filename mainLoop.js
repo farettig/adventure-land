@@ -1,4 +1,5 @@
 
+
 //Custom Settings
 //Farming spots are found in G.maps.main
 
@@ -19,6 +20,7 @@
 // const farmMonsterNr = 8;
 
 
+
 // // Hawks
 // const stationary = false;
 // const singleTarget = true;
@@ -33,7 +35,7 @@ const singleTarget = true;
 const farmMonsterName = "wolf";
 const farmMap = "winterland";
 const farmMonsterNr = 7;
-const Spadar = false;
+
 
 // // ent
 // const stationary = false;
@@ -41,8 +43,7 @@ const Spadar = false;
 // const farmMonsterName = "ent";
 // const farmMap = "desertland";
 // const farmMonsterNr = 3;
-// const mainTank = {name: "Maela", class: "warrior"};
-// const Spadar = true;
+// // const Spadar = false;
 
 
 // const stationary = false;
@@ -66,17 +67,19 @@ const Spadar = false;
 // const farmMap = "mansion";
 // const farmMonsterNr = 5;
 
-const specialMonsters = ["snowman","goldenbat","stompy"]; 
+const specialMonsters = ["snowman","goldenbat","stompy","ent"]; 
 
 
 //  Defining Characters
+const rogueName = "Matiiiiiin"
 const merchantName = "Matiiiiin";
 const priestName = "Matiiiin";
 const rangerName = "Matiin";
 const mageName = "Matiiin";
 const warriorName = "Matin";
-const partyList = [priestName, rangerName, warriorName,merchantName]; //merchantName  merchantName
-const whiteList = ["Matin","Matiin","Matiiin","Matiiiin","Matiiiiin"];
+const partyList = [priestName, rogueName, warriorName,merchantName]; //merchantName  merchantName
+const whiteList = ["Matin","Matiin","Matiiin","Matiiiin","Matiiiiin","Matiiiiiin"];
+const Spadar = false;
 
 //  class of your main tank
 const mainTank = {name: warriorName, class: "warrior"};
@@ -102,11 +105,11 @@ const inventoryMax = 31;
 const merchantStandMap = "main";
 const merchantStandCoords = {x:-127, y:-124};
 const itemsToKeep = [mPot, hPot, "tracker"];
-const equipmentToKeep = ["sshield","fireblade"];
+const equipmentToKeep = ["sshield","fireblade","shield"];
 
 
 const trashName = ["hpbelt","hpring","hpearring","hpamulet","vitearring","vitring","ringsj",
-                    "wattire","wgloves","wbreeches","wshoes","wcap","stinger"];
+                    "wattire","wgloves","wbreeches","wshoes","wcap","stinger","intamulet","stramulet","dexamulet"];
 
 
 
@@ -117,18 +120,17 @@ const baseChance = [100.00,   98.00,   95.00,   71.26,   61.42,   41.38,   26.35
 const upgradeItemLevel1 = 5;
 const upgradeItemLevel2 = 7;
 const sellItemLevel = 3;
-const profitMargin = 1.8;
-const manaReserve = 0.2;
 const mluckDuration = 3600000;
 
 const upgradeItemList = ["bow","staff","helmet","shoes","gloves","pants","coat","quiver","wbasher","xmashat",
-                        "eslippers","eears", "epyjamas","helmet1","coat1","gloves1","pants1","t2bow","carrotsword","merry","cclaw"];
+                        "eslippers","eears", "epyjamas","helmet1","coat1","gloves1","pants1","t2bow","carrotsword","merry","cclaw",
+                        "wingedboots","cclaw"];
 const combineItemList = ["intring","strring","dexring"];
 const vendorUpgradeList = ["shoes","gloves","helmet","coat","wbasher"]; 	
 const specialItems = ["firestaff","firesword","seashell","offering","essenceofire","leather"];
-
-const buyFromPonty = ["intring","strring","dexring","intearring","strearring","dexearring","intamulet","stramulet","dexamulet","intbelt","strbelt","dexbelt","wbook0",
-                        "helmet1","coat1","gloves1","pants1","hhelmet","harmor","hpants","hgloves","cclaw","rattail","sshield"];
+const buyFromPonty = ["intring","strring","dexring","intearring","strearring","dexearring","intbelt","strbelt","dexbelt","wbook0",
+                        "helmet1","coat1","gloves1","pants1","hhelmet","harmor","hpants","hgloves","rattail","sshield","spores",
+                        "cclaw"];
 
 // let merchantStatus = {idle: true, hasBeenTeleported: false};
 // let mluckRecently = false;
@@ -145,7 +147,6 @@ var returningToTown = false;
 var traveling = false;
 let sentRequests = [];
 
-
 load_code(2);   //helperFunctions
 load_code(3);   //mageSkills
 load_code(4);   //merchantSkills
@@ -155,6 +156,10 @@ load_code(8);   //evadeTarget
 load_code(9);   //warriorSkills
 load_code(11);  //logging
 if (character.ctype == mainTank.class) load_code(12);  //GUI
+load_code(13);  //rogueSkills
+
+
+
 
 //Hotkeys!
 map_key("5", "snippet", "loadCharacters()")
@@ -244,7 +249,7 @@ function respawnProcess()
 	    {
             if ( !parent.party_list.includes(p) )
             {
-                if ( (p !== character.name) && (p !== merchantName) )  
+                if ( (p !== character.name) && (p !== merchantName) && ( character.name == mainTank.name) )  
                 {
                     loadCharacter(p);
                     log(p+"loading");   

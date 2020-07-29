@@ -22,19 +22,67 @@ function warriorSkills(target, farmMonsterName)
         warriorTaunt(target);
         warriorHardshell(target);
         warriorWarcry(target);
+        warriorEarlyTaunt(target);
         return;
     }
     
 }
 
+
+function warriorEarlyTaunt(currentTarget)
+{
+    let currentlyTargeting = 0;
+    let specialAround = 0;
+    if(specialMonsters.includes(currentTarget.mtype)) return;
+
+    for(id in parent.entities)
+    {
+        var current = parent.entities[id];
+        if ( current.target == character.name ) currentlyTargeting++;
+        if ( specialMonsters.includes(current.mtype)) specialAround++;
+    }
+
+    if ( (currentTarget.hp < (currentTarget.max_hp * .33)) && (currentlyTargeting < 2) && (specialAround == 0))
+    {
+        var min_d=999999,target=null;
+        for(id in parent.entities)
+        {
+            var current = parent.entities[id];
+            if(current.type !="monster" || !current.visible || current.dead) continue;
+            if(current.mtype != farmMonsterName) continue;
+            if(current.target == character.name) continue;
+            if(current == currentTarget) continue;
+            if(!can_move_to(current)) continue;
+            var c_dist=parent.distance(character,current);
+            if(c_dist<min_d) min_d=c_dist,target=current;
+        }
+        
+        if ( ( simple_distance(character,target) < G.skills.taunt.range ) && !is_on_cooldown("taunt") && character.mp > G.skills.taunt.mp)
+        {
+            use_skill("taunt",target);
+            change_target(currentTarget);
+        }
+
+    }
+}
+
+
 function warriorTaunt(target)
 {
-    if (get_target_of(target) && get_target_of(target) !== character && ( simple_distance(character,target) < G.skills.taunt.range ) && !is_on_cooldown("taunt") && character.mp > G.skills.taunt.mp)
+
+    if (get_target_of(target) !== character && ( simple_distance(character,target) < G.skills.taunt.range ) && !is_on_cooldown("taunt") && character.mp > G.skills.taunt.mp)
     {
         // if (target.target == "Brutus" &&)
-        stop();
+        // stop();
         use_skill("taunt", target);
     }
+
+    partyList.forEach(element => {target = get_nearest_monster({target:element});
+        if(target && target.target !== mainTank.name && !is_on_cooldown("taunt") && ( simple_distance(character,target) < G.skills.taunt.range ))
+        {
+            use_skill("taunt", target);
+        }
+    });
 
 }
 
@@ -67,6 +115,21 @@ function warriorWarcry(target)
 {
     if ( target && !is_on_cooldown("warcry") && !character.s.warcry)
     {
-        use_skill("warcry");
+        if ( parent.party_list.includes(priestName) && parent.entities[priestName] )
+        {
+           if (character.s.darkblessing) 
+           {
+                use_skill("warcry");
+           }
+           else
+           {
+               return;
+           }
+        } 
+        else
+        {
+            use_skill("warcry");
+        }
+        
     }
 }

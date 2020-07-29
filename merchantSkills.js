@@ -37,7 +37,7 @@ function merchantSkills(){
 	if(findTriple(0)) compoundItems(0);
 	if(findTriple(1)) compoundItems(1);
 	if(findTriple(2)) compoundItems(2);
-	if(findTriple(3)) compoundItems(3);
+	// if(findTriple(3)) compoundItems(3);
 
 	//relocateItems();
 	};
@@ -168,6 +168,7 @@ function sellTrash(){
 		if(character.items[i]
 		   && (trashName.indexOf(character.items[i].name) !== -1)
 		   && (!item_grade(character.items[i]) > 0)
+		   && (character.items[i].level == 0)
 		   && (!character.items[i].p)) 
 		{
 			log("Merchant is unloading trash: " + character.items[i].name);
@@ -183,7 +184,8 @@ function sellTrash(){
 	}		
 }
 
-function exchangeGems(){
+function exchangeGems()
+{
 	for(let i = 0; i <= 41; i++){
 		if(character.items[i]
 			&& (character.items[i].q > 1)
@@ -196,17 +198,17 @@ function exchangeGems(){
 	}
 }
 
-function depositMoney(){	
+function depositMoney()
+{
 	bank_deposit(character.gold - reserveMoney);
 	log("Money deposited! Money in Pocket: " + character.gold);
 }
 
-function depositItems(){
+function depositItems()
+{
 	for(let i = 41; i > 0; i--){
         if(!character.items[i]) return;
-        if(character.items[i] 
-		&& (character.items[i].level && character.items[i].level >= sellItemLevel)
-		|| (item_grade(character.items[i]) > 0 || G.items[character.items[i].name].type === "material" || specialItems.includes(character.items[i].name)))
+        if(character.items[i] && (character.items[i].level && character.items[i].level >= sellItemLevel) || (item_grade(character.items[i]) > 0 || G.items[character.items[i].name].type === "material" || specialItems.includes(character.items[i].name)))
 			{
 				bank_store(i);
 				log("Item Stored in bank!");
@@ -214,38 +216,29 @@ function depositItems(){
 	}
 }
 
-function upgradeItems(){
+function upgradeItems()
+{
 	if(character.q.upgrade || (quantity("scroll0") < 1) || (quantity("scroll1") < 1))
 	{
-		//log("Already combining something!");
+		//Already combining something!
 		return;
 	}
+	
 	for(let i = 0; i <= 41; i++)
 	{
-		if(character.items[i]
-		&& (character.items[i].level < upgradeItemLevel1)
-		&& (!character.items[i].p)
-		&& upgradeItemList.includes(character.items[i].name)
-		&& item_grade(character.items[i]) < 1 )
+		if(character.items[i] && (character.items[i].level < upgradeItemLevel1) && (!character.items[i].p) && upgradeItemList.includes(character.items[i].name) && item_grade(character.items[i]) < 1 )
 		{
 			log("Upgrade Started for item " + G.items[character.items[i].name].name + " +" + character.items[i].level);
 			upgrade(i,locate_item("scroll0"));
 			return;
 		}
-		else
+		else if(character.items[i] && (character.items[i].level < upgradeItemLevel2) && (!character.items[i].p) && upgradeItemList.includes(character.items[i].name))
 		{
-			if(character.items[i]
-				&& (character.items[i].level < upgradeItemLevel2)
-				&& (!character.items[i].p)
-				&& upgradeItemList.includes(character.items[i].name))
-				{
-					log("Upgrade Started for item " + G.items[character.items[i].name].name + " +" + character.items[i].level);
-					upgrade(i,locate_item("scroll1"));
-					return;
-				}
+			log("Upgrade Started for item " + G.items[character.items[i].name].name + " +" + character.items[i].level);
+			upgrade(i,locate_item("scroll1"));
+			return;
 		}
 	}
-
 }
 
 function compoundItems(level){
@@ -254,9 +247,14 @@ function compoundItems(level){
 		return;
 	}
 	let triple = findTriple(level);
-	if(triple
-	   && triple.length === 3
-	   && !character.q.compound){
+	if(triple && triple.length === 3 && !character.q.compound && level === 2)
+	{
+		compound(triple[0],triple[1],triple[2],locate_item("cscroll1"));
+		log("Compounded an Item!");
+	}
+
+	else if(triple && triple.length === 3 && !character.q.compound)
+	{
 		compound(triple[0],triple[1],triple[2],locate_item("cscroll0"));
 		log("Compounded an Item!");
 	}
@@ -282,7 +280,7 @@ function findTriple(level){
 						   && character.items[k].name === character.items[j].name
 						   && (!character.items[i].p)
 						   && character.items[k].level === level){
-							log(" Slot i: "  + i + " item: " + character.items[i].name + " Slot j: "  + j + " item: " + character.items[j].name + " Slot k: "  + k + " item: " + character.items[k].name )
+							// log(" Slot i: "  + i + " item: " + character.items[i].name + " Slot j: "  + j + " item: " + character.items[j].name + " Slot k: "  + k + " item: " + character.items[k].name )
 							compoundTriple.push(i, j, k);
 							return compoundTriple
 						}

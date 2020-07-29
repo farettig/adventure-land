@@ -4,7 +4,8 @@
 function loadCharacters(){
 	//start_character(warriorName, "mainLoop");
 	start_character(priestName, "mainLoop");
-	start_character(rangerName, "mainLoop");
+	// start_character(rangerName, "mainLoop");
+	start_character(rogueName, "mainLoop");
 	log("Loading Characters...");
 	setTimeout(initParty, 8000);
 }
@@ -21,6 +22,7 @@ function initParty(){
 	send_party_invite(rangerName);
 	send_party_invite(merchantName);
 	send_party_invite(mageName);
+	send_party_invite(rogueName);
 
 
 	log("Party Invites sent!");
@@ -32,6 +34,7 @@ function stopCharacters(){
 	stop_character("Matiiin");
 	stop_character("Matiiiin");
 	stop_character("Matiiiiin");
+	stop_character("Matiiiiiin");
 	log("Characters stopped!");
 }
 
@@ -340,7 +343,7 @@ function requestMluck()
 
 function checkBuffs()
 {
-	if (character.name === merchantName) return;
+	if (character.name === merchantName || farmMonsterName === "ent") return;
 	let mluck = false;
 	//let elixir = false;
 
@@ -520,6 +523,7 @@ function doCombat(){
 		if(character.ctype === "priest") priestSkills(target);
 		if(character.ctype === "ranger") rangerSkills(target, farmMonsterName);
 		if(character.ctype === "warrior") warriorSkills(target, farmMonsterName);
+		if(character.ctype === "rogue") rogueSkills(target, farmMonsterName);
 		//Attacks the target
 		autoFight(target);
 	}
@@ -578,13 +582,6 @@ function getTarget(farmTarget){
 	
 	if(!target)
 	{
-		//Returns monster that targets character
-		target = get_nearest_monster({target:character.name});
-		if(target)
-		{
-			change_target(target);
-			return target;
-		}
 		//Returns monster that targets party-member
 		partyList.forEach(element => {
 			target = get_nearest_monster({target:element});
@@ -594,10 +591,18 @@ function getTarget(farmTarget){
 				return target;
 			}
 		});
+		//Returns monster that targets character
+		target = get_nearest_monster({target:character.name});
+		if(target)
+		{
+			change_target(target);
+			return target;
+		}
+
 		//Returns any monster that targets nobody
 		target = get_nearest_monster({
 			
-			//no_target:false,
+			// no_target:true,
 			type:farmTarget
 		});
 		if(target){
@@ -617,6 +622,10 @@ function autoFight(target){
 		{
 			move(422,-2423)
 		}
+		if(target.mtype === "ent")
+		{
+			move(-435,-1882)
+		}
 	}
 
 	if(!is_in_range( target, "attack"))
@@ -634,39 +643,14 @@ function autoFight(target){
 			);
 		}
 	}
-
-	// else if ( !is_on_cooldown("attack") )
-	// {
-	// 	{
-	// 		attack(target);
-	// 		reduce_cooldown("attack", character.ping*1.1);
-	// 	}
-	// }
-	
-	
-    // else if (!is_on_cooldown("attack")){
-		
-	// 	if(target.hp<1) return;
-	// 	else
-	// 	{
-	// 		attack(target).then((message) => 
-	// 		{
-	// 			let cooldownReduction = Math.min(character.ping, 250);
-	// 			reduce_cooldown("attack", cooldownReduction);
-	// 			log("reduced cooldown by " + cooldownReduction);
-	// 		})
-	// 		.catch((message) => 
-	// 		{
-	// 			if (message.reason ==="cooldown")
-	// 			{
-	// 				log(character.ctype + " attack failed: " + message.reason + " of "+ message.remaining);
-	// 			}
-	// 		});
-	// 	}
-	// }
 	
 	////	from egehawk	////
 	if (!is_on_cooldown("attack") && (!window.last_attack || mssince(window.last_attack) > 500)){
+
+		//	rudimentary hazard achievment 
+		// if (character.ctype === "warrior" && ( target.hp < character.attack * 2)) return;
+		// if (( target.hp < character.attack * 1.3) && target.s.burned) return;
+
 		if (character.ctype === "warrior") equipWeapon();
 		window.last_attack = new Date();
 		attack(target).then((message) => {
@@ -923,7 +907,7 @@ function adjustedUpgradeChance()
 
 function equipWeapon()
 {
-	if (character.slots.offhand.name === "sshield")
+	if (character.slots.offhand.name === "sshield" || character.slots.offhand.name === "shield")
 	{
 
 		equip(40,"offhand")
@@ -942,7 +926,7 @@ function equipShield()
 		
 		equip(40,"offhand")
 	}
-	else if (character.slots.offhand.name === "sshield")
+	else if (character.slots.offhand.name === "sshield" || character.slots.offhand.name === "shield" )
 	{
 		// do nothing
 		return;
