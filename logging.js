@@ -74,13 +74,27 @@ if (parent.prev_handler)
 	}
 }
 
+if (character.prev_handler) 
+{
+	for (let [event, handler] of character.prev_handler) 
+	{
+		character.socket.removeListener(event, handler);
+	}
+}
+
 parent.prev_handler = [];
+character.prev_handler = [];
 
 //handler pattern shamelessly stolen from JourneyOver
 function register_handler(event, handler) 
 {
     parent.prev_handler.push([event, handler]);
     parent.socket.on(event, handler);
+}
+function register_characterhandler(event, handler) 
+{
+    character.prev_handler.push([event, handler]);
+    character.on(event, handler);
 }
 
 function upgradeHandler(event)
@@ -105,8 +119,15 @@ function upgradeHandler(event)
 	}
 }
 
+function deathHandler(event)
+{
+	log("I HAVE DIED")
+	let output = "[DIED]"
+	writeToLog(output);
+}
 
 register_handler("q_data", upgradeHandler);
+register_characterhandler("death", deathHandler);
 
 
 
@@ -133,7 +154,6 @@ function SaveDisconnect(){
 	
 	localStorage.setItem("Disconnect_Log:" + character.name, JSON.stringify(disconnectHistory));
 }
-
 
 parent.disconnect = disconnect_override;
 

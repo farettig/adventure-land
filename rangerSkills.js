@@ -1,34 +1,67 @@
-function rangerSkills(target, farmMonsterName){
-
+function rangerSkills(target, farmMonsterName)
+{
     if (singleTarget && ((target.target == character.name) || !target.target)) return;
+    ranger3shot()
+    piercingShot();
+    rangerHuntersMark();
+    rangerSuperShot();
+    
 
-    //How much Mana should be kept in reserve
-    let manaReserve = .05;
 
-    //Use Ranger Skills
-    if(character.mp > (character.max_mp * manaReserve)){
-        //3-Shot7
-        if(character.mp > G.skills["3shot"].mp
-            && !is_on_cooldown("attack")
-            && (!singleTarget || Spadar)){
-            let targets = Object.values(parent.entities).filter(entity => entity.mtype === farmMonsterName && is_in_range(entity, "3shot") && entity.target);
-            if(targets.length >= 2) use_skill("3shot", targets);
-            //game_log("Ranger used 3-Shot");
+
+
+
+    
+
+}
+
+function ranger3shot()
+{
+    if(character.mp > G.skills["3shot"].mp && !is_on_cooldown("attack") && (!singleTarget || Spadar || extraAggroLimit > 0))
+    {    
+        let targets = Object.values(parent.entities).filter(entity => entity.mtype === farmMonsterName && is_in_range(entity, "3shot") && (entity.target == mainTank.name))
+        if(targets.length >= 3)
+        {
+            use_skill("3shot", targets);
         }
-        //Supershot
-        if(character.mp > G.skills.supershot.mp
-            && is_in_range(target, "supershot")
-            && !is_on_cooldown("supershot")){
-            use_skill("supershot");
-            //game_log("Ranger used Supershot");
-        }
-        //Hunters Mark
-        if(character.mp > G.skills.huntersmark.mp
-           && is_in_range(target, "huntersmark")
-           && !is_on_cooldown("huntersmark")){
-            use_skill("huntersmark");
-            //game_log("Ranger used Hunters Mark");
+    }
+
+}
+
+function rangerSuperShot()
+{
+    if(character.mp > G.skills.supershot.mp && is_in_range(target, "supershot") && !is_on_cooldown("supershot"))
+    {
+        use_skill("supershot",target);
+        //game_log("Ranger used Supershot");
+    }
+}
+//Supershot
+
+
+
+
+function piercingShot()
+{
+    let piercingValue = damage_multiplier((G.monsters[farmMonsterName].armor)-(character.apiercing+G.skills.piercingshot.apiercing))
+    let nonPiercingValue = damage_multiplier((G.monsters[farmMonsterName].armor)-(character.apiercing))
+    
+    if(piercingValue > nonPiercingValue)
+    {
+        if(character.mp > G.skills.piercingshot.mp && is_in_range( target, "attack") && !is_on_cooldown("attack"))
+        {
+
+                use_skill("piercingshot", target);
         }
     }
 }
 
+function rangerHuntersMark()
+{
+    if(target && (character.mp > G.skills.huntersmark.mp) && is_in_range(target, "huntersmark") && !is_on_cooldown("huntersmark") && !target.s.marked && (target.hp > (character.attack * 10)) )
+    {
+        use_skill("huntersmark");
+        // log("cursed")
+    }
+
+}

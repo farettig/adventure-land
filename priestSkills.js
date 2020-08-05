@@ -37,7 +37,7 @@
             
             heal(character);
             change_target(oldTarget);
-         //   game_log("Priest is healing themself");
+        //    game_log("selfheal");
         }
     
     }
@@ -47,6 +47,7 @@
         if( (findHurtPartyHeal() > 0) && character.mp >= G.skills.partyheal.mp && !is_on_cooldown("partyheal"))
         {
              use_skill("partyheal");
+             log("partyheal")
         }
     }
     
@@ -58,7 +59,7 @@
         heal(partyMember).then((message) => {
             reduce_cooldown("heal", Math.min(character.ping, 250));
             reduce_cooldown("attack", Math.min(character.ping, 250))
-            // game_log("Priest is healing " + partyMember.name);
+            game_log("healing " + partyMember.name);
         }).catch((message) => {
            // log(character.name + " Heal failed: " + message.reason);
         })};
@@ -68,9 +69,10 @@
     
     function priestCurse(target)
     {
-        if(target && (character.mp > G.skills.curse.mp) && is_in_range(target, "curse") && !is_on_cooldown("curse") && !target.s.curse)
+        if(target && (character.mp > G.skills.curse.mp) && is_in_range(target, "curse") && !is_on_cooldown("curse") && !target.s.cursed && (target.hp > (character.attack * 3)) )
         {
             use_skill("curse");
+            // log("cursed")
         }
     }
     
@@ -119,6 +121,7 @@
         if(character.level > 69 && !is_on_cooldown("darkblessing") && character.mp > G.skills.darkblessing.mp && !character.s.darkblessing)
         {
             use_skill("darkblessing");
+            // log("darkblessing")
     
         }
     

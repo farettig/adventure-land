@@ -42,7 +42,7 @@ function warriorEarlyTaunt(currentTarget)
         if ( specialMonsters.includes(current.mtype)) specialAround++;
     }
 
-    if ( (currentTarget.hp < (currentTarget.max_hp * .33)) && (currentlyTargeting < 2) && (specialAround == 0))
+    if ( (currentTarget.hp < (currentTarget.max_hp * (extraAggroLimit*.2))) && (currentlyTargeting <= extraAggroLimit) && (specialAround == 0))
     {
         var min_d=999999,target=null;
         for(id in parent.entities)

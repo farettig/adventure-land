@@ -933,6 +933,94 @@ function equipShield()
 	}
 }
 
+function equipLootGear()
+{
+	if ( character.ctype !== mainLooter.class && character.name !== mainLooter.name )
+	{
+		return;
+	}
+
+	
+	if (character.slots.helmet.name !== "wcap")
+	{
+		equip(39,"helmet")
+	}
+	if (character.slots.pants.name !=="wbreeches" )
+	{	
+		equip(40,"pants")
+	}
+	if (character.slots.shoes.name !=="wshoes" )
+	{	
+		equip(35,"shoes")
+	}
+	if (character.slots.gloves.name !=="handofmidas" )
+	{	
+		equip(36,"gloves")
+	}
+
+}
+function unequipLootGear()
+{
+	if ( character.ctype !== mainLooter.class && character.name !== mainLooter.name )
+	{
+		return;
+	}
+
+	
+	if (character.slots.helmet.name !== "helmet")
+	{
+		equip(39,"helmet")
+	}
+	if (character.slots.pants.name !=="pants" )
+	{	
+		equip(40,"pants")
+	}
+	if (character.slots.shoes.name !=="wingedboots" )
+	{	
+		equip(35,"shoes")
+	}
+	if (character.slots.gloves.name !=="gloves" )
+	{	
+		equip(36,"gloves")
+	}
+
+}
+
+
+function lootRoutine()
+{
+
+	var totalChests = 0;
+	if (character.ctype !== mainLooter.class) return;
+	if (!parent.chests) return;
+
+	for(id in parent.chests)
+    {
+        var current = parent.chests[id];
+        if ( current ) totalChests++;
+	}
+	if (totalChests == 0)
+	{
+		unequipLootGear();
+	}
+	if (totalChests >= 1 )
+	{
+		equipLootGear();
+		for (id in parent.chests)
+		{
+			if (character.slots.gloves.name == "handofmidas")
+			{
+				
+				loot(id);
+				// log("looted with goldm gear");
+			} 
+
+			
+		}
+	}
+
+}
+
 
 function approachLeader()
 {

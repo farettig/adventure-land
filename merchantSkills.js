@@ -378,22 +378,24 @@ function merchant_on_cm(sender, data)
 	}
 	else if (data.message == "thanks")
 	{
-		log("Successful delivery confirmation from " + sender);
+		deliveryRequests = [];
 
-		if (data.request == "mluck")
-		{
-			for (let i = deliveryRequests.length - 1; i >= 0; i--)
-			{
-				if (deliveryRequests[i].request == "mluck")
-				{
-					deliveryRequests.splice(i, 1);
-				}
-			}
-		}
-		else
-		{
-			deliveryRequests.splice(deliveryRequests.indexOf(x => x.sender == sender && x.request == data.request), 1);
-		}
+		// log("Successful delivery confirmation from " + sender);
+
+		// if (data.request == "mluck")
+		// {
+		// 	for (let i = deliveryRequests.length - 1; i >= 0; i--)
+		// 	{
+		// 		if (deliveryRequests[i].request == "mluck")
+		// 		{
+		// 			deliveryRequests.splice(i, 1);
+		// 		}
+		// 	}
+		// }
+		// else
+		// {
+		// 	deliveryRequests.splice(deliveryRequests.indexOf(x => x.sender == sender && x.request == data.request), 1);
+		// }
 	}
 
 
