@@ -293,26 +293,7 @@ function depositInventoryAtBank()
 
 	smart_move("bank", () =>
 	{
-		/* //	store in first bank
-		let storeCompounds = (getEmptyInventorySlotCount() < 8);
-		storeInventoryInBankVault(0, storeCompounds);
 
-		//	store in second bank
-		if (checkForLowInventorySpace())
-		{
-			setTimeout(() =>
-			{
-				storeCompounds = (getEmptyInventorySlotCount() < 8);
-				storeInventoryInBankVault(1, storeCompounds);
-				banking = false;
-
-			}, 1000);
-		} 
-		
-		else
-		{
-			banking = false;
-		}*/
 		depositItems();
 		depositMoney();
 		banking = false;
@@ -496,7 +477,7 @@ function checkPotionInventory()
 function doCombat(){
 
 
-	if(!singleTarget)
+	if(singleTarget == false)
 	{
 		target = engageTarget();
 	}
@@ -568,7 +549,26 @@ function singleTargetCombat()
 	}
 	else
 	{
-	 	target = get_target_of(parent.entities[mainTank.name]);
+		let min_d=999999;
+		let min_hp=1;
+		for(id in parent.entities)
+		{
+			let current = parent.entities[id];
+			if(current.type !="monster" || !current.visible || current.dead) continue;
+			if(current.target != mainTank.name) continue;
+			if(!can_move_to(current)) continue;
+			let c_dist = parent.distance(character,current);
+			let c_hp = (current.hp/current.max_hp);
+
+			if((c_dist < min_d) && (c_hp < min_hp)) 
+			{
+				min_d = c_dist;
+				min_hp = c_hp;
+				target = current;
+			}
+		}
+
+	return target;
 	}
 
 	return target;
@@ -715,18 +715,31 @@ function findWeaponDamage(itemName, upgradeLevel, outputMethod=true)
 function characterMainhand()
 {
 	let cMainhand = character.slots.mainhand;
-	let output = item_properties(cMainhand).attack;
-	return output;
+	if (cMainhand)
+	{
+		let output = item_properties(cMainhand).attack;
+		return output;
+	}
+
 }
 
+function characterOffhand()
+{
+	let cOffhand = character.slots.offhand;
+	if (cOffhand)
+	{
+		let output = item_properties(cOffhand).attack;
+		return output;
+	}
+}
 function characterMainstat()
 {
 	let ctype = character.ctype;
 	let main_stat = character[G.classes[ctype].main_stat];
 	return main_stat;
 }
-
-function calc_attack(mainhand = characterMainhand(), main_stat = characterMainstat(), ctype = character.ctype, offhand=0, bonus_attack=0)
+//		credit to Rising in discord		//
+function calc_attack(mainhand = characterMainhand(), offhand= characterOffhand(), main_stat = characterMainstat(), ctype = character.ctype, bonus_attack=0)
 {
 	// ctype: character class
 	// main_stat: Amount of points in the classes' main stat
@@ -818,54 +831,9 @@ function reloadCharacters()
     }, 1000);
 }
 
-// function on_hit(data){
-// 	log(data);
-// }
 
 
 
-// let totalDamage = 0;
-// let startDps = new Date();
-// let timeSince = 0;
-// let dps = 0;
-
-// character.on("target_hit", function(data){
-// 	totalDamage = totalDamage + data.damage;
-// 	dps = Math.round(totalDamage/timeSince*1000);
-// 	timeSince = mssince(startDps);
-	
-
-
-// });
-// setInterval(announceDPS, 300000);
-
-// function announceDPS()
-// {
-// 	log ( character.ctype +" " + dps + " dps | " + totalDamage + "  dmg | " + Math.round(timeSince/1000/60) + " min");
-// }
-
-
-
-// (() => {
-// 	// Register listener to cleanup when script terminates
-// 	window.addEventListener('unload', cleanup);
-// 	let recentCalls = [];
-// 	// Create a backup of original function persisted in parent
-// 	if (!parent.socketEmit) parent.socketEmit = parent.socket.emit;
-// 	// Extend original render_party() function
-// 	parent.socket.emit = (packet, data) => {
-// 	  recentCalls = recentCalls.filter(({ time }) => Date.now() - time < 4000);
-// 	  if (recentCalls.reduce((total, { id }) => packet === id ? total + 1 : total, 0) < 48) {
-// 		parent.socketEmit(packet, data);
-// 		recentCalls.push({ id: packet, time: Date.now() });
-// 	  } else {
-// 		console.error(`Blocked socket emit for ${packet} because of too many recent calls.`);
-// 	  }
-// 	};
-// 	function cleanup() {
-// 	  if (parent.socketEmit) parent.socket.emit = parent.socketEmit;
-// 	}
-// })();
 
 
 
@@ -933,6 +901,16 @@ function equipShield()
 	}
 }
 
+let lastEquip = 0;
+function delayedEquip(slot, name)
+{
+  if(new Date() - lastEquip > 100)
+  {
+     equip(slot, name);
+     lastEquip = new Date();
+  }
+}
+
 function equipLootGear()
 {
 	if ( character.ctype !== mainLooter.class && character.name !== mainLooter.name )
@@ -943,22 +921,23 @@ function equipLootGear()
 	
 	if (character.slots.helmet.name !== "wcap")
 	{
-		equip(39,"helmet")
+		delayedEquip(39,"helmet")
 	}
 	if (character.slots.pants.name !=="wbreeches" )
 	{	
-		equip(40,"pants")
+		delayedEquip(40,"pants")
 	}
 	if (character.slots.shoes.name !=="wshoes" )
 	{	
-		equip(35,"shoes")
+		delayedEquip(35,"shoes")
 	}
 	if (character.slots.gloves.name !=="handofmidas" )
 	{	
-		equip(36,"gloves")
+		delayedEquip(36,"gloves")
 	}
 
 }
+
 function unequipLootGear()
 {
 	if ( character.ctype !== mainLooter.class && character.name !== mainLooter.name )
@@ -969,19 +948,19 @@ function unequipLootGear()
 	
 	if (character.slots.helmet.name !== "helmet")
 	{
-		equip(39,"helmet")
+		delayedEquip(39,"helmet")
 	}
 	if (character.slots.pants.name !=="pants" )
 	{	
-		equip(40,"pants")
+		delayedEquip(40,"pants")
 	}
 	if (character.slots.shoes.name !=="wingedboots" )
 	{	
-		equip(35,"shoes")
+		delayedEquip(35,"shoes")
 	}
 	if (character.slots.gloves.name !=="gloves" )
 	{	
-		equip(36,"gloves")
+		delayedEquip(36,"gloves")
 	}
 
 }
@@ -999,7 +978,7 @@ function lootRoutine()
         var current = parent.chests[id];
         if ( current ) totalChests++;
 	}
-	if (totalChests == 0)
+	if (totalChests == 0 && character.slots.gloves.name == "handofmidas")
 	{
 		unequipLootGear();
 	}
@@ -1010,8 +989,7 @@ function lootRoutine()
 		{
 			if (character.slots.gloves.name == "handofmidas")
 			{
-				
-				loot(id);
+				parent.open_chest(id);
 				// log("looted with goldm gear");
 			} 
 
@@ -1118,3 +1096,93 @@ move: (target, opt) => {
 }
 
 */
+
+var servers = {};
+parent.api_call("get_servers", {}, 
+         {callback:setServers});
+
+function setServers(response)
+{
+    if(response != null && response[0] != null)
+    {
+        servers = {};
+        for(id in response[0].message)
+        {
+            var server = response[0].message[id];
+            if(server.name != "TEST")
+            {
+                var serverObj = {};
+                serverObj.name = server.region + server.name;
+                serverObj.ip = server.ip;
+                serverObj.port = server.port;
+                serverObj.rewrite = "/in/" + server.region + "/" + server.name + "/";
+
+                servers[serverObj.name] = serverObj;
+            }
+        }
+    }
+    console.log(servers);
+}
+
+function changeServer(name)
+{
+  var server = servers[name];
+
+  if(server != null)
+  {
+    parent.window.location = parent.window.location.origin + "/character/" + character.name + server.rewrite;
+  }
+}
+
+
+
+
+function saveEquipment(name)
+{	
+	let saveName = (character.name + "_" + name);
+	let savedEquipment = [];
+	let characterSlots = character.slots;
+	for (id in characterSlots)
+	{
+		let slotName = {id:id};
+		let object = characterSlots[id];
+		let data = $.extend(slotName, object);
+		//log(JSON.stringify(object));
+		savedEquipment.push(data);
+	}
+	// show_json((savedEquipment));
+	set(saveName,savedEquipment)
+}
+
+
+function loadEquipment(name)
+{
+	let saveName = (character.name + "_" + name);
+	let equipLS = get(saveName);
+	for(id in equipLS)
+	{
+		let storedItem = equipLS[id];
+		let c_Equip = character.slots[storedItem.id];
+
+		if(!storedItem.name)
+		{
+			if(c_Equip)	
+			{
+				unequip(storedItem.id);
+			}
+			continue;
+		}
+	
+		if (c_Equip && storedItem.name == c_Equip.name 
+		   && storedItem.level == c_Equip.level)  continue;
+
+		for (let i=0; i < character.items.length; i++)
+		{
+			if(character.items[i] && (character.items[i].name==storedItem.name) && (character.items[i].level==storedItem.level))
+			{
+				equip(i,storedItem.id);
+				continue;
+			}
+		}
+	}
+}

@@ -28,7 +28,7 @@ function merchantSkills(){
 	upgradeItems();
 	buyScrolls();
 	// buyVendorUpgrade();
-	pontyPurchase();
+	// pontyPurchase();
 	exchangeGems();
 
 
@@ -95,7 +95,7 @@ function buyPotions(){
 
 		if(mPotions < mPotionThreshold) buy_with_gold(mPot, mPotionThreshold - mPotions + mPotionThreshold);
 		if(hPotions < hPotionThreshold) buy_with_gold(hPot, hPotionThreshold - hPotions + hPotionThreshold);
-		log("Bought Potions!");
+		// log("Bought Potions!");
 	}
 }
 
@@ -137,19 +137,19 @@ function tidyInventory()
 function buyScrolls(){
 	if(quantity("cscroll0") <= minNormalCompoundScrolls){
 		buy("cscroll0", (minNormalCompoundScrolls - quantity("cscroll0")));
-		log("Bought Normal Compound Scrolls!");
+		// log("Bought Normal Compound Scrolls!");
 	}
 	if(quantity("cscroll1") <= minRareCompoundScrolls){
 		buy("cscroll1", (minRareCompoundScrolls - quantity("cscroll1")));
-		log("Bought Rare Compound Scrolls!");
+		// log("Bought Rare Compound Scrolls!");
 	}
 	if(quantity("scroll0") <= minNormalUpgradeScrolls){
 		buy("scroll0", (minNormalUpgradeScrolls - quantity("scroll0")));
-		log("Bought Normal Upgrade Scrolls!");
+		// log("Bought Normal Upgrade Scrolls!");
 	}
 	if(quantity("scroll1") <= minRareUpgradeScrolls){
 		buy("scroll1", (minRareUpgradeScrolls - quantity("scroll1")));
-		log("Bought Rare Upgrade Scrolls!");
+		// log("Bought Rare Upgrade Scrolls!");
 	}
 }
 
@@ -158,7 +158,7 @@ function buyVendorUpgrade(){
 	for(let i = 0; i < vendorUpgradeList.length; i++){
 		if((character.gold < 350000) || character.items.filter(element => element).length > inventoryMax || quantity("scroll1") < 1) return;
 		buy(vendorUpgradeList[i], 1);
-		log("Bought " + vendorUpgradeList[i]);
+		// log("Bought " + vendorUpgradeList[i]);
 	}
 }
 
@@ -228,13 +228,13 @@ function upgradeItems()
 	{
 		if(character.items[i] && (character.items[i].level < upgradeItemLevel1) && (!character.items[i].p) && upgradeItemList.includes(character.items[i].name) && item_grade(character.items[i]) < 1 )
 		{
-			log("Upgrade Started for item " + G.items[character.items[i].name].name + " +" + character.items[i].level);
+			// log("Upgrade Started for item " + G.items[character.items[i].name].name + " +" + character.items[i].level);
 			upgrade(i,locate_item("scroll0"));
 			return;
 		}
 		else if(character.items[i] && (character.items[i].level < upgradeItemLevel2) && (!character.items[i].p) && upgradeItemList.includes(character.items[i].name))
 		{
-			log("Upgrade Started for item " + G.items[character.items[i].name].name + " +" + character.items[i].level);
+			// log("Upgrade Started for item " + G.items[character.items[i].name].name + " +" + character.items[i].level);
 			upgrade(i,locate_item("scroll1"));
 			return;
 		}
@@ -250,13 +250,13 @@ function compoundItems(level){
 	if(triple && triple.length === 3 && !character.q.compound && level === 2)
 	{
 		compound(triple[0],triple[1],triple[2],locate_item("cscroll1"));
-		log("Compounded an Item!");
+		// log("Compounded an Item!");
 	}
 
 	else if(triple && triple.length === 3 && !character.q.compound)
 	{
 		compound(triple[0],triple[1],triple[2],locate_item("cscroll0"));
-		log("Compounded an Item!");
+		// log("Compounded an Item!");
 	}
 }
 
@@ -323,7 +323,7 @@ function buyCheapStuff(){
 				   && character.gold > otherPlayer.slots[tradeSlot].price
 				   && otherPlayer.slots[tradeSlot].b == "false"){
 					trade_buy(otherPlayer, tradeSlot);
-					log("Bought " + otherPlayer.slots[tradeSlot].name + " from player: " + otherPlayer.name)
+					// log("Bought " + otherPlayer.slots[tradeSlot].name + " from player: " + otherPlayer.name)
 				}				
 			});				  
 		}

@@ -47,7 +47,7 @@ function writeToLog(data)
 	}
 
 	let fs = require('fs');
-	let write = "time=" + new Date().toLocaleTimeString() + " character=" + character.name + " " + data + "\n";
+	let write = "character=" + character.name + " " + data + " " + Date.now() +"\n";
 
 	fs.appendFile(todaysLogName(), write, (error) =>
 	{
@@ -58,7 +58,6 @@ function writeToLog(data)
 		}
 		else
 		{
-		// /	log(write);
 		}
 	});
 }
@@ -97,6 +96,29 @@ function register_characterhandler(event, handler)
     character.on(event, handler);
 }
 
+
+function goldReceivedHandler(event)
+{
+	if(event.response == "gold_received")
+	{
+		if(!event.gold) return;
+
+		let output = "type=gold_received "+ "amount="+event.gold;
+		writeToLog(output);
+	}
+}
+
+function goldGameLogHandler(event)
+{
+	if(event.color == "gold")
+	{
+		var gold = parseInt(event.message.replace(" gold", "").replace(",", ""));
+	
+
+		let output = "type=gold_game_log "+ "amount="+gold;
+		writeToLog(output);
+	}
+}
 function upgradeHandler(event)
 {
 	
@@ -111,9 +133,10 @@ function upgradeHandler(event)
 		{
 			result = "Success"
 		}
-		let output = "[Upgrade] +" + event.p.level + " " + G.items[event.p.name].name + " with " + event.p.scroll + " - " + result +": " + event.p.nums[3]+event.p.nums[2]+"."+event.p.nums[1]+event.p.nums[0] + "% vs. "+ event.p.chance*100 + "%"
+		let output = "type=upgrade item=" + G.items[event.p.name].id + " level=" + event.p.level + " scroll=" + event.p.scroll + " rolled=" + event.p.nums[3]+event.p.nums[2]+"."+event.p.nums[1]+event.p.nums[0] + "%"+ " needed="+ event.p.chance*100 + "%" + " results="+result;
 		console.log(output);
 		log(output);
+
 		writeToLog(output);
 		
 	}
@@ -122,13 +145,31 @@ function upgradeHandler(event)
 function deathHandler(event)
 {
 	log("I HAVE DIED")
-	let output = "[DIED]"
+	let output = "type=death";
+	writeToLog(output);
+}
+function levelUpHandler(event)
+{
+	let output = "type=level_up " + "level=" + event.level;
+	writeToLog(output);
+}
+
+function targetHitHandler(event)
+{
+	if(!event.damage) return;
+	let source = event.source;
+	let target = parent.entities[event.target].mtype;
+	let eventdamage = event.damage;
+	let output = "type=hit "+"source="+source+" target="+target+" damage="+eventdamage;
 	writeToLog(output);
 }
 
 register_handler("q_data", upgradeHandler);
+register_handler("game_log", goldGameLogHandler);
+register_handler("game_response", goldReceivedHandler);
 register_characterhandler("death", deathHandler);
-
+register_characterhandler("level_up", levelUpHandler);
+register_characterhandler("target_hit", targetHitHandler);
 
 
 
@@ -150,7 +191,7 @@ function SaveDisconnect(){
 	entry.time = new Date();
 	entry.reason = parent.window.disconnect_reason;
 	disconnectHistory.push(entry);
-	writeToLog("[DISCONNECT] " + entry.reason);
+	writeToLog("type=disconnect " + "reason=" + entry.reason);
 	
 	localStorage.setItem("Disconnect_Log:" + character.name, JSON.stringify(disconnectHistory));
 }

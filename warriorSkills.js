@@ -105,7 +105,7 @@ function warriorCharge(target)
 
 function warriorHardshell(target)
 {
-    if ( target && !is_on_cooldown("hardshell") )
+    if ( target && !is_on_cooldown("hardshell") && character.hp <= (character.max_hp * .85))
     {
         use_skill("hardshell");
     }

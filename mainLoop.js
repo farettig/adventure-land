@@ -129,10 +129,10 @@ const upgradeItemList = ["bow","staff","helmet","shoes","gloves","pants","coat",
                         "wingedboots","cclaw","xmassweater","wattire","wgloves","wbreeches","wshoes","wcap"];
 const combineItemList = ["intring","strring","dexring"];
 const vendorUpgradeList = ["shoes","gloves","helmet","coat","wbasher"]; 	
-const specialItems = ["firestaff","firesword","seashell","offering","essenceofire","leather"];
+const specialItems = ["firestaff","firesword","seashell","offering","essenceofire","leather","fury"];
 const buyFromPonty = ["intring","strring","dexring",,"intbelt","strbelt","dexbelt","wbook0",
                         "helmet1","coat1","gloves1","pants1","hhelmet","harmor","hpants","hgloves","rattail","sshield","spores",
-                        "cclaw","xmassweater","mshield","oozingterror","harbringer","eggnog","crabclaw","poison","spidersilk","beewings"];
+                        "cclaw","xmassweater","mshield","oozingterror","harbringer","eggnog","crabclaw","poison","spidersilk","beewings","fury"];
 
 // let merchantStatus = {idle: true, hasBeenTeleported: false};
 // let mluckRecently = false;
@@ -177,7 +177,7 @@ function onStart()
     {
         merchantOnStart();
     }
-    let data = "Client Started"
+    let data = "type=Client_Started"
     writeToLog(data);
     respawnProcess();
 }
@@ -269,17 +269,3 @@ function respawnProcess()
 } 
     
 
-// character.on("level_up",function(data){
-// 	writeToLog("New Level "+data.level);
-// });
-
-// character.on("target_hit",function(data){
-//     let targetHit = get_entity(data.target); 
-//     if (data.source !== "undefined")
-//     {
-//         writeToLog(
-//             "target="+targetHit.name+" damage="+data.damage+" source="+data.source
-//         );
-//     }
-
-// });
