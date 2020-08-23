@@ -1,11 +1,14 @@
+
+
 function warriorSkills(target, farmMonsterName)
 {
     if ( !singleTarget )
     {
         warriorCharge(target);
         warriorTaunt(target);
-        warriorAOETaunt(target);
+        // warriorAOETaunt(target);
         warriorWarcry(target);
+        warriorCleave(target);
         return;
     }
     else if ( Spadar )
@@ -28,7 +31,36 @@ function warriorSkills(target, farmMonsterName)
     
 }
 
+function warriorCleave(target)
+{
+    let extraMobs = 0;
+    let currentMobs = 0;
+    for(id in parent.entities)
+    {
+        var current = parent.entities[id];
+        if(current.type !="monster" || !current.visible || current.dead) continue;
+        if(parent.distance(character,current) > G.skills.cleave.range) continue;
+        if(current.mtype != farmMonsterName)
+        {
+            if(specialMonsters.includes(current.mtype))
+            {
+                return;
+            }
+            else
+            {
+                extraMobs++; 
+                continue;
+            }
+        }  
+        if(!can_move_to(current)) continue;
+        currentMobs++;
+    }
+    if ( (currentMobs > 2) && (extraMobs == 0) && (!is_on_cooldown("cleave")) && (character.mp > (G.skills.cleave.mp + character.mp_cost*3)) && (is_in_range(target,"attack")))
+    {
+        use_skill("cleave");
+    }
 
+}
 function warriorEarlyTaunt(currentTarget)
 {
     let currentlyTargeting = 0;
