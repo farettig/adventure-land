@@ -4,7 +4,7 @@ function rangerSkills(target, farmMonsterName)
     ranger3shot()
     piercingShot();
     rangerHuntersMark();
-    rangerSuperShot();
+    // rangerSuperShot();
     
 
 
@@ -14,18 +14,28 @@ function rangerSkills(target, farmMonsterName)
     
 
 }
-
 function ranger3shot()
 {
     if(character.mp > G.skills["3shot"].mp && !is_on_cooldown("attack") && (!singleTarget || Spadar || extraAggroLimit > 0))
     {    
-        let targets = Object.values(parent.entities).filter(entity => entity.mtype === farmMonsterName && is_in_range(entity, "3shot") && (entity.target == mainTank.name))
-        if(targets.length >= 3)
+        let targets = Object.values(parent.entities).filter(entity => entity.mtype === farmMonsterName && is_in_range(entity, "3shot") )
+        if(targets.length >= 2)
         {
             use_skill("3shot", targets);
         }
     }
+}
 
+function ranger3shotTank()
+{
+    if(character.mp > G.skills["3shot"].mp && !is_on_cooldown("attack") && (!singleTarget || Spadar || extraAggroLimit > 0))
+    {    
+        let targets = Object.values(parent.entities).filter(entity => entity.mtype === farmMonsterName && is_in_range(entity, "3shot") && (entity.target == mainTank.name))
+        if(targets.length >= 2)
+        {
+            use_skill("3shot", targets);
+        }
+    }
 }
 
 function rangerSuperShot()
@@ -36,7 +46,7 @@ function rangerSuperShot()
         //game_log("Ranger used Supershot");
     }
 }
-//Supershot
+
 
 
 
