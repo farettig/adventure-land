@@ -1,10 +1,12 @@
+
 function rogueSkills(target, farmMonsterName)
 {
     // buff the party
     rSpeed();
 
+    
+    mentalBurst(target);
     quickAttack(target);
-
     if ( !singleTarget )
     {
 
@@ -46,13 +48,21 @@ function quickAttack(target)
 
     if ( target )
     {
-        // log("step1")
-        if( mhType == "fist" && (character.mp > (G.skills.rspeed.mp + (character.mp_cost * 2))) && !is_on_cooldown("quickpunch") )
+        if( mhType == "fist" && (character.mp > (G.skills.quickpunch.mp + (character.mp_cost * 2))) && !is_on_cooldown("quickpunch") )
         {
-            // log("quick attack on " + target.name)
             use_skill("quickpunch", target)
         }
-        
     }
-    
+}
+
+function mentalBurst(target)
+{
+    if ( target )
+    {
+        if( (character.mp > (G.skills.mentalburst.mp + (character.mp_cost * 2))) && !is_on_cooldown("mentalburst") && (character.int >= 64) )
+        {
+            log("mentalburst used");
+            use_skill("mentalburst", target);
+        }
+    }
 }
