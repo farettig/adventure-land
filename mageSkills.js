@@ -44,7 +44,8 @@ function mageSkills(target){
 
 			// Energize Partymenber
 	let energizeTarget = get_entity(rangerName);	
-	if(character.mp > (character.max_mp * .1)
+	if(energizeTarget
+		&& character.mp > (character.max_mp * .1)
 		&& energizeTarget.mp < (energizeTarget.max_mp * manaReserve)
 		&& !energizeTarget.rip
 		&& is_in_range(energizeTarget, "energize")
