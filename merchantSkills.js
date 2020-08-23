@@ -28,8 +28,8 @@ function merchantSkills(){
 	upgradeItems();
 	buyScrolls();
 	// buyVendorUpgrade();
-	// pontyPurchase();
-	exchangeGems();
+	pontyPurchase();
+	// exchangeGems();
 
 
 	
@@ -39,7 +39,7 @@ function merchantSkills(){
 	if(findTriple(2)) compoundItems(2);
 	// if(findTriple(3)) compoundItems(3);
 
-	//relocateItems();
+
 	};
 
 	if (new Date().getMinutes() === 00 || new Date().getMinutes() === 30)
@@ -497,7 +497,7 @@ function standCheck()
 			parent.close_merchant();
 		}
 	}
-	else if (vendorMode)
+	else if (vendorMode && !character.stand)
 	{
 		parent.open_merchant(locate_item("stand0"));
 	}
@@ -583,8 +583,8 @@ function deliverPotions(shipment)
 		log("Delivering potions to " + shipment.name);
 		let index = deliveryShipments.indexOf(shipment);
 		deliveryShipments.splice(index, 1);
-		send_item(shipment.name, locate_item(hPot), shipment.hPots);
-		send_item(shipment.name, locate_item(mPot), shipment.mPots);
+		send_item(shipment.name, locate_item(hPot), shipment.hPots-1);
+		send_item(shipment.name, locate_item(mPot), shipment.mPots-1);
 		//send_item(shipment.name, locate_item(hPot), quantity(hPot));
 		//send_item(shipment.name, locate_item(mPot), quantity(mPot));
 	}
