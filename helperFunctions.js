@@ -93,25 +93,7 @@ function transferLoot(merchantName){
     }   
 }
 
-function relocateItems()
-{
-	if(locate_item(hPot) !== -1 
-		&& locate_item(hPot) !== 37) swap(locate_item(hPot), 37);
-	if(locate_item(mPot) !== -1 
-		&& locate_item(mPot) !== 38)swap(locate_item(mPot), 38);
-	//Compound Scroll
-	if(locate_item("cscroll1") !== -1 
-		&& locate_item("cscroll1") !== 35)swap(locate_item("cscroll0"), 39);
-	//Upgrade Scroll
-	if(locate_item("scroll1") !== -1 
-		&& locate_item("scroll1") !== 36)swap(locate_item("scroll0"), 40);  
-	//Compound Scroll
-	if(locate_item("cscroll0") !== -1 
-		&& locate_item("cscroll0") !== 39)swap(locate_item("cscroll0"), 39);
-	//Upgrade Scroll
-	if(locate_item("scroll0") !== -1 
-		&& locate_item("scroll0") !== 40)swap(locate_item("scroll0"), 40);
-}
+
 
 //on_party_invite gets called _automatically_ by the game on an invite 
 function on_party_invite(name) 
@@ -651,15 +633,15 @@ function autoFight(target){
 		// if (character.ctype === "warrior" && ( target.hp < character.attack * 2)) return;
 		// if (( target.hp < character.attack * 1.3) && target.s.burned) return;
 
-		if (character.ctype === "warrior") equipWeapon();
+		// if (character.ctype === "warrior") equipWeapon();
 		window.last_attack = new Date();
 		attack(target).then((message) => {
 			reduce_cooldown("attack", Math.min(character.ping, 250));
 			window.last_attack = new Date(0);
-			if (character.ctype === "warrior") equipShield();
+			// if (character.ctype === "warrior") equipShield();
 		}).catch((message) => {
 		//	log(character.ctype + " attack failed: " + message.reason);
-			if (character.ctype === "warrior") equipShield();
+			// if (character.ctype === "warrior") equipShield();
 		});
 	}
 }
@@ -918,11 +900,6 @@ function equipLootGear()
 		return;
 	}
 
-	
-	if (character.slots.helmet.name !== "wcap")
-	{
-		delayedEquip(39,"helmet")
-	}
 	if (character.slots.pants.name !=="wbreeches" )
 	{	
 		delayedEquip(40,"pants")
@@ -946,10 +923,6 @@ function unequipLootGear()
 	}
 
 	
-	if (character.slots.helmet.name !== "helmet")
-	{
-		delayedEquip(39,"helmet")
-	}
 	if (character.slots.pants.name !=="pants" )
 	{	
 		delayedEquip(40,"pants")
@@ -978,11 +951,11 @@ function lootRoutine()
         var current = parent.chests[id];
         if ( current ) totalChests++;
 	}
-	if (totalChests == 0 && character.slots.gloves.name == "handofmidas")
+	if (totalChests <= 2 && character.slots.gloves.name == "handofmidas")
 	{
 		unequipLootGear();
 	}
-	if (totalChests >= 1 )
+	if (totalChests >= 3 )
 	{
 		equipLootGear();
 		for (id in parent.chests)
@@ -1186,3 +1159,7 @@ function loadEquipment(name)
 		}
 	}
 }
+
+
+
+map_key("B", "snippet", "const draw_text=(n,r,t) => { let a=new PIXI.Text(n,{fontFamily:parent.SZ.font,fontSize:36,fontWeight:\"bold\",fill:21760,align:\"center\"});a.x=r,a.y=t,a.type=\"text\",a.scale=new PIXI.Point(.5,.5),a.parentGroup=parent.text_layer,a.anchor.set(.5,1),parent.drawings.push(a),parent.map.addChild(a)},areas=G.maps[character.in].monsters,colors={boundary:21760,rage:11141120};for(const n in areas){const r=areas[n];for(const n in colors)if(n in r){const t=r[n][0],a=r[n][1],o=r[n][2],e=r[n][3],s=Math.round((t+o)/2),l=Math.round(a+Math.random()*(e-a));\"boundary\"===n&&draw_text(r.type+\": \"+r.count,s,l),draw_line(t,a,o,a,2,colors[n]),draw_line(o,a,o,e,2,colors[n]),draw_line(o,e,t,e,2,colors[n]),draw_line(t,e,t,a,2,colors[n])}}");
