@@ -108,14 +108,32 @@ function goldReceivedHandler(event)
 	}
 }
 
+function monsterKillsHandler(event)
+{
+	let search = (character.name + " killed a ");
+	if(event.search(search) >= 0)
+	{
+		var processed = event.replace(search, "");
+		for (id in G.monsters)
+		{
+			let current = G.monsters[id].name;
+			if (current == processed)
+			{
+				let output = "type=kill " + "target=" + id + " monster=" + id;
+				writeToLog(output)
+				
+			};
+		}
+	}
+}
 function goldGameLogHandler(event)
 {
 	if(event.color == "gold")
 	{
-		var gold = parseInt(event.message.replace(" gold", "").replace(",", ""));
+		var gold1 = parseInt(event.message.replace(" gold", "").replace(",", ""));
 	
 
-		let output = "type=gold_game_log "+ "amount="+gold;
+		let output = "type=gold_game_log "+ "amount="+gold1;
 		writeToLog(output);
 	}
 }
@@ -133,7 +151,9 @@ function upgradeHandler(event)
 		{
 			result = "Success"
 		}
-		let output = "type=upgrade item=" + G.items[event.p.name].id + " level=" + event.p.level + " scroll=" + event.p.scroll + " rolled=" + event.p.nums[3]+event.p.nums[2]+"."+event.p.nums[1]+event.p.nums[0] + "%"+ " needed="+ event.p.chance*100 + "%" + " results="+result;
+		var needed = event.p.chance*100;
+
+		let output = "type=upgrade item=" + G.items[event.p.name].id + " level=" + event.p.level + " scroll=" + event.p.scroll + " rolled=" + event.p.nums[3]+event.p.nums[2]+"."+event.p.nums[1]+event.p.nums[0] + " needed="+ needed.toFixed(2) + " results="+result;
 		console.log(output);
 		log(output);
 
@@ -145,12 +165,13 @@ function upgradeHandler(event)
 function deathHandler(event)
 {
 	log("I HAVE DIED")
-	let output = "type=death";
+	let output = "type=death log=death" 
 	writeToLog(output);
 }
+
 function levelUpHandler(event)
 {
-	let output = "type=level_up " + "level=" + event.level;
+	let output = "type=level_up " + "level=" + event.level + " message="+event + " new_level=" + event.level;
 	writeToLog(output);
 }
 
@@ -162,10 +183,18 @@ function targetHitHandler(event)
 	let eventdamage = event.damage;
 	let output = "type=hit "+"source="+source+" target="+target+" damage="+eventdamage;
 	writeToLog(output);
+
+	if (event.kill)
+	{
+		let output = "type=kill " + "target=" + target + " monster=" + target;
+		writeToLog(output);
+				
+	} 
 }
 
 register_handler("q_data", upgradeHandler);
 register_handler("game_log", goldGameLogHandler);
+// register_handler("game_log", monsterKillsHandler);
 register_handler("game_response", goldReceivedHandler);
 register_characterhandler("death", deathHandler);
 register_characterhandler("level_up", levelUpHandler);
