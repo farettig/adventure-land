@@ -29,14 +29,55 @@
 // const farmMonsterNr = 5;
 
 
-// Wolf
-const stationary = false;
-const singleTarget = true;
-const farmMonsterName = "wolf";
-const farmMap = "winterland";
-const farmMonsterNr = 7;
-const extraAggroLimit = 2;
+// // Wolf
+// const stationary = false;
+// const singleTarget = true;
+// const farmMonsterName = "wolf";
+// const farmMap = "winterland";
+// const farmMonsterNr = 7;
+// const extraAggroLimit = 2;
 
+
+// // bbpompom
+// const stationary = false;
+// const singleTarget = false;
+// const farmMonsterName = "bbpompom";
+// const farmMap = "winter_cave";
+// const farmMonsterNr = 6;
+// const extraAggroLimit = 3;
+
+// // arcticbee
+// const stationary = false;
+// const singleTarget = false;
+// const farmMonsterName = "arcticbee";
+// const farmMap = "winterland";
+// const farmMonsterNr = 10;
+// const extraAggroLimit = 3;
+
+
+// // iceroamer
+// const stationary = false;
+// const singleTarget = false;
+// const farmMonsterName = "iceroamer";
+// const farmMap = "winterland";
+// const farmMonsterNr = 5;
+// const extraAggroLimit = 3;
+
+// // ghost
+// const stationary = false;
+// const singleTarget = true;
+// const farmMonsterName = "ghost";
+// const farmMap = "halloween";
+// const farmMonsterNr = 9;
+// const extraAggroLimit = 3;
+
+// ghost
+const stationary = false;
+const singleTarget = false;
+const farmMonsterName = "scorpion";
+const farmMap = "main";
+const farmMonsterNr = 6;
+const extraAggroLimit = 3;
 
 // // ent
 // const stationary = false;
@@ -68,7 +109,7 @@ const extraAggroLimit = 2;
 // const farmMap = "mansion";
 // const farmMonsterNr = 5;
 
-const specialMonsters = ["snowman","goldenbat","stompy","ent"]; 
+const specialMonsters = ["snowman","goldenbat","stompy","ent","fvampire","phoenix"]; 
 
 
 //  Defining Characters
@@ -78,7 +119,7 @@ const priestName = "Matiiiin";
 const rangerName = "Matiin";
 const mageName = "Matiiin";
 const warriorName = "Matin";
-const partyList = [priestName, rogueName, warriorName,merchantName]; //merchantName  merchantName
+const partyList = [priestName, rangerName, warriorName ,merchantName]; //merchantName  merchantName
 const whiteList = ["Matin","Matiin","Matiiin","Matiiiin","Matiiiiin","Matiiiiiin"];
 const Spadar = false;
 
@@ -106,14 +147,11 @@ const inventoryMax = 31;
 const merchantStandMap = "main";
 const merchantStandCoords = {x:-127, y:-124};
 const itemsToKeep = [mPot, hPot, "tracker","handofmidas","goldbooster"];
-const equipmentToKeep = ["sshield","fireblade","shield","pants","helmet","gloves","wingedboots","wshoes","handofmidas","wcap","wbreeches"];
+const equipmentToKeep = ["sshield","fireblade","shield","pants","helmet","gloves","wingedboots","wshoes","handofmidas","wcap","wbreeches","bataxe"];
 
 
 const trashName = ["hpbelt","hpring","hpearring","hpamulet","vitearring","vitring","ringsj",
-                    "wattire","wgloves","wbreeches","wshoes","wcap","stinger","intamulet","stramulet","dexamulet",
-                    "intearring","strearring","dexearring"];
-
-
+                    "wattire","wgloves","wbreeches","wshoes","wcap","stinger","stramulet","cclaw","quiver"];
 
 
 //  Upgrade stuff
@@ -124,15 +162,16 @@ const upgradeItemLevel2 = 7;
 const sellItemLevel = 3;
 const mluckDuration = 3600000;
 
-const upgradeItemList = ["bow","staff","helmet","shoes","gloves","pants","coat","quiver","wbasher","xmashat",
+const upgradeItemList = ["bow","staff","helmet","shoes","gloves","pants","coat","xmashat",
                         "eslippers","eears", "epyjamas","helmet1","coat1","gloves1","pants1","t2bow","carrotsword","merry","cclaw",
-                        "wingedboots","cclaw","xmassweater","wattire","wgloves","wbreeches","wshoes","wcap"];
-const combineItemList = ["intring","strring","dexring"];
-const vendorUpgradeList = ["shoes","gloves","helmet","coat","wbasher"]; 	
-const specialItems = ["firestaff","firesword","seashell","offering","essenceofire","leather","fury"];
+                        "wingedboots","cclaw","xmassweater","pmace"];
+const combineItemList = ["intring","strring","dexring","intearring","strearring","dexearring","intamulet","dexamulet"];
+const vendorUpgradeList = ["gloves","helmet","coat"]; 	
+const specialItems = ["firestaff","firesword","seashell","offering","essenceofire","leather","fury","vitscroll","lspores"];
 const buyFromPonty = ["intring","strring","dexring",,"intbelt","strbelt","dexbelt","wbook0",
-                        "helmet1","coat1","gloves1","pants1","hhelmet","harmor","hpants","hgloves","rattail","sshield","spores",
-                        "cclaw","xmassweater","mshield","oozingterror","harbringer","eggnog","crabclaw","poison","spidersilk","beewings","fury"];
+                        "coat1","gloves1","pants1","hhelmet","harmor","hpants","hgloves","rattail","sshield","spores",
+                        "xmassweater","mshield","oozingterror","harbringer","eggnog","crabclaw","poison","spidersilk","beewings","fury",
+                        "intearring","strearring","dexearring","essenceoflife","whitegg","rattail"];
 
 // let merchantStatus = {idle: true, hasBeenTeleported: false};
 // let mluckRecently = false;
@@ -222,8 +261,6 @@ function main(){
 }
 
 function tier2Actions(){
-        
-    relocateItems();
     //Transfer loot to merchant
     transferLoot(merchantName);
     checkPotionInventory();
