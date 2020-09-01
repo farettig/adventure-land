@@ -273,7 +273,8 @@ function dpsmeterHitHandler(event)
 			attackerEntity = character;
 		}
 		
-		if((attackerEntity.party != null || attacker == character.name) || attackerEntity.party == character.party)
+		if((attackerEntity.party || attacker == character.name) || attackerEntity.party == character.party)
+		// if((attackerEntity.party != null || attacker == character.name) || attackerEntity.party == character.party)
 		{
 			if(event.damage != null)
 			{
