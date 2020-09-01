@@ -1,5 +1,4 @@
 //  settings    //
-let manaReserve = 0.5;
 let hurtPartyMembers = 0;
 let healingThreshold = (character.attack * .9);
 let partyHealThreshold = findPartyHealValue() + G.items[hPot].gives[0][1];
@@ -7,22 +6,36 @@ let partyHealThreshold = findPartyHealValue() + G.items[hPot].gives[0][1];
 
 function priestSkills(target)
 {
+    if (farmMonsterName == "fireroamer")
+    {
+        healingThreshold = (character.attack*.5);
+        partyHealThreshold = 600;
+        // priestAbsorb();
+        priestSelfHeal(target);
+        priestHealParty();
+        priestSingleHeal(target);
+        priestCurse(target);
+        priestDarkBlessing();
 
-    if (Spadar)
+        return;
+    }
+    else if (Spadar)
     {
         manaReserve = 0.5;
         hurtPartyMembers = 0;
         healingThreshold = (character.attack * .5);
         partyHealThreshold = 600;
+        return;
     }
-
-    priestCurse(target);
-    priestDarkBlessing();
-    priestSelfHeal(target);
-    priestHealParty();
-    priestSingleHeal(target);
-
-
+    else
+    {
+        priestCurse(target);
+        priestDarkBlessing();
+        priestSelfHeal(target);
+        priestHealParty();
+        priestSingleHeal(target);
+        return;
+    }
 }
 
 function priestSelfHeal (oldTarget)
@@ -41,9 +54,22 @@ function priestSelfHeal (oldTarget)
 
 }
 
+function priestAbsorb()
+{
+    if(character.s.burned) return;
+
+    let current_tank = parent.entities[mainTank.name];
+    if (!current_tank) return;
+    if ( current_tank.s.burned && !is_on_cooldown("absorb")) //current_tank.hp < (current_tank.max_hp * 0.7) &&
+    {
+        log("sburbing")
+        use_skill("absorb", current_tank);
+    } 
+}
+
 function priestHealParty()
 {
-    if( (findHurtPartyHeal() > 0) && character.mp >= (G.skills.partyheal.mp + (character.mp_cost * 3)) && !is_on_cooldown("partyheal"))
+    if( (findHurtPartyHeal() > 0) && character.mp >= (G.skills.partyheal.mp + (character.mp_cost * 3)) && !is_on_cooldown("partyheal") && (character.mp > (character.max_mp * 0.5)))
     {
             use_skill("partyheal");
         //  log("partyheal")
