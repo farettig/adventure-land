@@ -12,7 +12,7 @@ function merchantOnStart()
 }
 
 function merchantSkills(){
-	
+	checkRequests();
 	// specialParty();
 
 	if(is_moving(character) || smart.moving || deliveryMode)
@@ -594,7 +594,6 @@ function deliverPotions(shipment)
 	}
 }
 
-
 function moveToRequest(request)
 {
 	if (!request)
@@ -617,78 +616,6 @@ function moveToRequest(request)
 		}
 	}
 }
-
-
-// function merchantAuto(target)
-// {
- 	
-// 	if (!isBusy())
-// 	{
-// 		if (isInTown() && !vendorMode)
-// 		{
-// 			enableVendorMode();
-// 		}
-// 		else if (!isInTown())
-// 		{
-// 			goBackToTown();
-// 		}
-// 	}
-	
-// /* 
-// 	//	keep magic luck on yourself
-// 	if (!checkMluck(character) && !is_on_cooldown("mluck"))
-// 	{
-// 		log("mlucking self");
-// 		use_skill("mluck", character);
-// 		reduce_cooldown("mluck", character.ping);
-// 	} 
-
-//  */
-// 	for (let other in parent.entities)
-// 	{
-// 		let isPartyMember = parent.party_list.includes(other);
-// 		let friendlyTarget = parent.entities[other];
-
-// 		if (!friendlyTarget.player || friendlyTarget.npc)
-// 		{
-// 			continue;
-// 		}
-
-// 		if (isPartyMember)
-// 		{
-// 			if (distance(friendlyTarget, character) < 200)
-// 			{
-// 				let shipment = getShipmentFor(friendlyTarget.name);
-
-// 				if (shipment)
-// 				{
-// 					deliverItems(shipment);
-// 				}
-// 				else if (!checkMluck(friendlyTarget))
-// 				{
-// 					log("Giving mluck to " + friendlyTarget.name);
-// 					use_skill("mluck", friendlyTarget);
-// 					reduce_cooldown("mluck", character.ping);
-// 				}
-// 			}
-// 			else if (deliveryMode && !returningToTown && deliveryRequests.length > 0)
-// 			{
-// 				log("Moving closer to recipient.");
-// 				approachTarget(friendlyTarget);
-// 			}
-// 		}
-// 		else if (friendlyTarget)
-// 		{
-// 			//	mluck others but some safety checks to make sure you don't spam it
-// 			if (!is_on_cooldown("mluck") && !checkMluck(friendlyTarget) && is_in_range(friendlyTarget, "mluck") && !friendlyTarget.afk && !friendlyTarget.stand && character.mp > character.max_mp * 0.5)
-// 			{
-// 				log("Giving mluck to " + friendlyTarget.name);
-// 				use_skill("mluck", friendlyTarget);
-// 				reduce_cooldown("mluck", character.ping);
-// 			}
-// 		}
-// 	}
-// }
 
 function merchantAuto(target)
 {
@@ -766,9 +693,7 @@ function specialParty()
 	}
 }
 
-
 // Adapted From Lotus
-
 function pontyPurchase()
 {
 	// parent.socket.emit("secondhands");
