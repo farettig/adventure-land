@@ -48,7 +48,8 @@ function quickAttack(target)
 
     if ( target )
     {
-        if( mhType == "fist" && (character.mp > (G.skills.quickpunch.mp + (character.mp_cost * 2))) && !is_on_cooldown("quickpunch") )
+        let qARange = character.range * (G.skills.quickpunch.range_multiplier);
+        if( (simple_distance(character,target) < qARange) && mhType == "fist" && (character.mp > (character.max_mp * 0.6)) && !is_on_cooldown("quickpunch") )
         {
             use_skill("quickpunch", target)
         }
@@ -59,9 +60,10 @@ function mentalBurst(target)
 {
     if ( target )
     {
-        if( (character.mp > (G.skills.mentalburst.mp + (character.mp_cost * 2))) && !is_on_cooldown("mentalburst") && (character.int >= 64) )
+        let mbRange = character.range * (G.skills.mentalburst.range_multiplier) + (G.skills.mentalburst.range_bonus);
+        if( (simple_distance(character,target) < mbRange) && (character.mp > (G.skills.mentalburst.mp + (character.mp_cost * 2))) && !is_on_cooldown("mentalburst") && (character.int >= 64) )
         {
-            log("mentalburst used");
+            // log("mentalburst used");
             use_skill("mentalburst", target);
         }
     }
