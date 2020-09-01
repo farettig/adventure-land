@@ -22,9 +22,11 @@ function warriorSkills(target, farmMonsterName)
     else if ( singleTarget )
     {
         warriorCharge(target);
-        warriorTaunt(target);
         warriorHardshell(target);
         warriorWarcry(target);
+        // warriorStomp(target);
+        // if(mainTank.name !== character.name && Spadar == "false") return;
+        warriorTaunt(target);
         warriorEarlyTaunt(target);
         return;
     }
@@ -38,9 +40,9 @@ function warriorCleave(target)
     for(id in parent.entities)
     {
         var current = parent.entities[id];
-        if(current.type !="monster" || !current.visible || current.dead) continue;
+        if(current.type !=="monster" || !current.visible || current.dead) continue;
         if(parent.distance(character,current) > G.skills.cleave.range) continue;
-        if(current.mtype != farmMonsterName)
+        if(current.mtype !== farmMonsterName)
         {
             if(specialMonsters.includes(current.mtype))
             {
@@ -61,8 +63,13 @@ function warriorCleave(target)
     }
 
 }
+
 function warriorEarlyTaunt(currentTarget)
 {
+    if(character.s.burned)
+    {
+        if(character.s.burned.intensity > burnCap) return;
+    } 
     let currentlyTargeting = 0;
     let specialAround = 0;
     if(specialMonsters.includes(currentTarget.mtype)) return;
@@ -74,7 +81,7 @@ function warriorEarlyTaunt(currentTarget)
         if ( specialMonsters.includes(current.mtype)) specialAround++;
     }
 
-    if ( (currentTarget.hp < (currentTarget.max_hp * (extraAggroLimit*.2))) && (currentlyTargeting <= extraAggroLimit) && (specialAround == 0))
+    if ( (currentTarget.hp < (currentTarget.max_hp * (extraAggroLimit*.4))) && (currentlyTargeting <= extraAggroLimit) && (specialAround == 0))
     {
         var min_d=999999,target=null;
         for(id in parent.entities)
@@ -98,14 +105,10 @@ function warriorEarlyTaunt(currentTarget)
     }
 }
 
-
 function warriorTaunt(target)
 {
-
     if (get_target_of(target) !== character && ( simple_distance(character,target) < G.skills.taunt.range ) && !is_on_cooldown("taunt") && character.mp > G.skills.taunt.mp)
     {
-        // if (target.target == "Brutus" &&)
-        // stop();
         use_skill("taunt", target);
     }
 
@@ -164,4 +167,32 @@ function warriorWarcry(target)
         }
         
     }
+}
+
+function warriorStomp(target)
+{
+    if(!target)return;
+    if(is_on_cooldown("stomp")) 
+    {
+        if(character.slots.mainhand.name == "basher")
+        {
+            loadEquipment("basher-preswap")
+        }
+        return;
+    }
+
+    if((target.hp < target.max_hp * 0.05) || (target.hp > target.max_hp * 0.99)) return;
+    if(simple_distance(character,target) > character.range) return;
+    // saveEquipment("basher-preswap");
+    unequip("offhand");
+
+    delayedEquip(locate_item("basher"),"mainhand");
+
+    if(character.slots.mainhand.name == "basher")
+    {
+        use_skill("stomp");
+    }
+
+
+
 }
