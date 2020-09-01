@@ -37,6 +37,50 @@
 // const farmMonsterNr = 7;
 // const extraAggroLimit = 2;
 
+// // pppompom
+// const stationary = false;
+// const singleTarget = true;
+// const farmMonsterName = "pppompom";
+// const farmMap = "level2n";
+// const farmMonsterNr = 6;
+// const extraAggroLimit = 0;
+
+// // plantoid
+// const stationary = false;
+// const singleTarget = true;
+// const farmMonsterName = "plantoid";
+// const farmMap = "desertland";
+// const farmMonsterNr = 4;
+// const extraAggroLimit = 0;
+
+// //squigs, frogs, other stuff
+// const specialCoords = {x:-1140,y:800};
+// const farmMap = "main";
+// const stationary = false;
+// const singleTarget = false;
+// const extraAggroLimit = 3;
+// const farmMonsterName = "squig";
+// const farmMonsterNr = 0;
+
+// // fireroamer    
+// const stationary = false;
+// const singleTarget = true;
+// const farmMonsterName = "fireroamer";
+// const farmMap = "desertland";
+// const farmMonsterNr = 4;
+// const extraAggroLimit = 1;
+// const specialCoords = false;
+
+// goo    
+const stationary = false;
+const singleTarget = false;
+const farmMonsterName = "goo";
+const farmMap = "main";
+const farmMonsterNr = 9;
+const extraAggroLimit = 50;
+const specialCoords = false;
+
+
 
 // // bbpompom
 // const stationary = false;
@@ -71,13 +115,13 @@
 // const farmMonsterNr = 9;
 // const extraAggroLimit = 3;
 
-// ghost
-const stationary = false;
-const singleTarget = false;
-const farmMonsterName = "scorpion";
-const farmMap = "main";
-const farmMonsterNr = 6;
-const extraAggroLimit = 3;
+// // ghost
+// const stationary = false;
+// const singleTarget = false;
+// const farmMonsterName = "scorpion";
+// const farmMap = "main";
+// const farmMonsterNr = 6;
+// const extraAggroLimit = 3;
 
 // // ent
 // const stationary = false;
@@ -109,7 +153,7 @@ const extraAggroLimit = 3;
 // const farmMap = "mansion";
 // const farmMonsterNr = 5;
 
-const specialMonsters = ["snowman","goldenbat","stompy","ent","fvampire","phoenix"]; 
+const specialMonsters = ["snowman","goldenbat","stompy","ent","fvampire","phoenix","frog","squigtoad","tortoise","squig"]; 
 
 
 //  Defining Characters
@@ -119,13 +163,20 @@ const priestName = "Matiiiin";
 const rangerName = "Matiin";
 const mageName = "Matiiin";
 const warriorName = "Matin";
-const partyList = [priestName, rangerName, warriorName ,merchantName]; //merchantName  merchantName
+const partyList = [mageName, rangerName, priestName, merchantName]; //merchantName  merchantName
 const whiteList = ["Matin","Matiin","Matiiin","Matiiiin","Matiiiiin","Matiiiiiin"];
 const Spadar = false;
+const externalParty = [];
+const burnCap = 1800;
 
 //  class of your main tank
-const mainTank = {name: warriorName, class: "warrior"};
+const mainTank = {name: rangerName, class: "ranger"};
+// const mainTank = {name: priestName, class: "priest"};
+const offTank = {name: priestName, class: "priest"};
 const mainLooter = {name: priestName, class: "priest"};
+const soloMode = false;
+const seperateMode = false;
+
 
 //  potion stuff
 const mPot = "mpot1"
@@ -146,12 +197,12 @@ const minRareUpgradeScrolls = 5;
 const inventoryMax = 31;
 const merchantStandMap = "main";
 const merchantStandCoords = {x:-127, y:-124};
-const itemsToKeep = [mPot, hPot, "tracker","handofmidas","goldbooster"];
-const equipmentToKeep = ["sshield","fireblade","shield","pants","helmet","gloves","wingedboots","wshoes","handofmidas","wcap","wbreeches","bataxe"];
+const itemsToKeep = [mPot, hPot, "tracker","handofmidas","goldbooster","lantern","luckbooster","xpbooster","elixirluck"];
+const equipmentToKeep = ["test_orb","sshield","fireblade","shield","pants","helmet","gloves","wingedboots","wshoes","handofmidas","wcap","wbreeches","bataxe","basher"];
 
 
 const trashName = ["hpbelt","hpring","hpearring","hpamulet","vitearring","vitring","ringsj",
-                    "wattire","wgloves","wbreeches","wshoes","wcap","stinger","stramulet","cclaw","quiver"];
+                    "wattire","wgloves","wbreeches","wshoes","wcap","stinger","stramulet","cclaw","quiver","slimestaff"];
 
 
 //  Upgrade stuff
@@ -163,15 +214,16 @@ const sellItemLevel = 3;
 const mluckDuration = 3600000;
 
 const upgradeItemList = ["bow","staff","helmet","shoes","gloves","pants","coat","xmashat",
-                        "eslippers","eears", "epyjamas","helmet1","coat1","gloves1","pants1","t2bow","carrotsword","merry","cclaw",
-                        "wingedboots","cclaw","xmassweater","pmace"];
+                        "eslippers","eears", "epyjamas","t2bow","carrotsword","merry","cclaw",
+                        "wingedboots","cclaw","xmassweater","pmace","coat1","gloves1","pants1","helmet1"]; 
+
 const combineItemList = ["intring","strring","dexring","intearring","strearring","dexearring","intamulet","dexamulet"];
 const vendorUpgradeList = ["gloves","helmet","coat"]; 	
-const specialItems = ["firestaff","firesword","seashell","offering","essenceofire","leather","fury","vitscroll","lspores"];
+const specialItems = ["firestaff","firesword","seashell","offering","essenceofire","leather","fury","vitscroll","lspores","gem0","seashell"];
 const buyFromPonty = ["intring","strring","dexring",,"intbelt","strbelt","dexbelt","wbook0",
-                        "coat1","gloves1","pants1","hhelmet","harmor","hpants","hgloves","rattail","sshield","spores",
+                        "coat1","gloves1","pants1","helmet1","hhelmet","harmor","hpants","hgloves","rattail","spores",
                         "xmassweater","mshield","oozingterror","harbringer","eggnog","crabclaw","poison","spidersilk","beewings","fury",
-                        "intearring","strearring","dexearring","essenceoflife","whitegg","rattail"];
+                        "intearring","strearring","dexearring","essenceoflife","whitegg","rattail","seashell","dstones"];
 
 // let merchantStatus = {idle: true, hasBeenTeleported: false};
 // let mluckRecently = false;
@@ -189,15 +241,14 @@ var traveling = false;
 let sentRequests = [];
 
 load_code(2);   //helperFunctions
-load_code(3);   //mageSkills
+if(character.ctype == "mage") load_code(3);   //mageSkills
 load_code(4);   //merchantSkills
-load_code(5);   //priestSkills
-load_code(6);   //rangerSkills
-load_code(8);   //evadeTarget
-load_code(9);   //warriorSkills
+if(character.ctype == "priest") load_code(5);   //priestSkills
+if(character.ctype == "ranger") load_code(6);   //rangerSkills
+if(character.ctype == "warrior") load_code(9);   //warriorSkills
 load_code(11);  //logging
 if (character.ctype == mainTank.class) load_code(12);  //GUI
-load_code(13);  //rogueSkills
+if(character.ctype == "rogue") load_code(13);  //rogueSkills
 
 
 
@@ -245,9 +296,13 @@ function main(){
     //Loot everything
     if (!Spadar)
     {
-        if (character.ctype == mainLooter.class)
+        if(soloMode)
         {
-            // loot();
+            loot();
+            
+        }
+        else if (character.ctype == mainLooter.class)
+        {
             lootRoutine();
         }
         
@@ -280,11 +335,12 @@ function tier2Actions(){
 
 function tier3Actions(){
     checkSentRequests();
-    checkRequests();
 }
 
 function respawnProcess()
 {
+    if(soloMode==true) return;
+
     if(character.ctype === "merchant") return;
    
     if ( parent.party_list.length < partyList.length)
@@ -293,7 +349,7 @@ function respawnProcess()
 	    {
             if ( !parent.party_list.includes(p) )
             {
-                if ( (p !== character.name) && (p !== merchantName) && ( character.name == mainTank.name) )  
+                if ( (p !== character.name) && (p !== merchantName) && ( character.name == mainTank.name) && seperateMode == false )  
                 {
                     loadCharacter(p);
                     log(p+"loading");   
@@ -302,7 +358,18 @@ function respawnProcess()
                 setTimeout(send_party_invite, 3000, p );                
             }
         }
-	}
+    }
+    
+    if(character.name == mainTank.name && externalParty.length > 0)
+    {
+        for (let person of externalParty)
+        {
+            if ( !parent.party_list.includes(person))
+            {
+                send_party_invite(person);  
+            }
+        }
+    }
 } 
     
 
