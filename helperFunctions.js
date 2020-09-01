@@ -38,27 +38,53 @@ function stopCharacters(){
 	log("Characters stopped!");
 }
 
-function getFarmingSpot(farmMonsterName = "crab", farmMap = "main", farmMonsterNr = 8, action){
-	for (map in G.maps){
-		for(monster in G.maps[map].monsters){
-			let currentMonster = G.maps[map].monsters[monster]
-			if(map === farmMap
-				&& currentMonster.type === farmMonsterName
-			   	&& currentMonster.count === farmMonsterNr){
-				if(action === "move"){
-					//Switch Map if needed
-					if(character.map != map){
-						smart_move({to:map});
-					//If Map correct, go to Monster
-					}else{
-						smart_move({x:currentMonster.boundary[0] + ((currentMonster.boundary[2] - currentMonster.boundary[0]) / 2),y:currentMonster.boundary[1] + ((currentMonster.boundary[3] - currentMonster.boundary[1]) / 2)});
+function getFarmingSpot(farmMonsterName = "crab", farmMap = "main", farmMonsterNr = 8, action)
+{
+	if (specialCoords)
+	{
+		if(action === "move")
+		{
+			if(character.map != farmMap)
+			{
+				smart_move({to:farmMap});
+			//If Map correct, go to Monster
+			}
+			else
+			{
+				smart_move({x:specialCoords.x,y:specialCoords.y});
+			}
+		}
+		else if(action === "coord")
+		{
+			return specialCoords;
+		}
+
+	}
+	else
+	{
+		for (map in G.maps)
+		{
+			for(monster in G.maps[map].monsters){
+				let currentMonster = G.maps[map].monsters[monster]
+				if(map === farmMap
+					&& currentMonster.type === farmMonsterName
+					   && currentMonster.count === farmMonsterNr){
+					if(action === "move"){
+						//Switch Map if needed
+						if(character.map != map){
+							smart_move({to:map});
+						//If Map correct, go to Monster
+						}else{
+							smart_move({x:currentMonster.boundary[0] + ((currentMonster.boundary[2] - currentMonster.boundary[0]) / 2),y:currentMonster.boundary[1] + ((currentMonster.boundary[3] - currentMonster.boundary[1]) / 2)});
+						}
+					}else if(action === "coord"){
+						return {x:currentMonster.boundary[0] + ((currentMonster.boundary[2] - currentMonster.boundary[0]) / 2),y:currentMonster.boundary[1] + ((currentMonster.boundary[3] - currentMonster.boundary[1]) / 2)}
 					}
-				}else if(action === "coord"){
-					return {x:currentMonster.boundary[0] + ((currentMonster.boundary[2] - currentMonster.boundary[0]) / 2),y:currentMonster.boundary[1] + ((currentMonster.boundary[3] - currentMonster.boundary[1]) / 2)}
 				}
 			}
 		}
 	}
+	
 }
 
 function transferLoot(merchantName){
@@ -203,7 +229,9 @@ function isInTown()
 function isAtFarmSpot()
 {
 	let farmspot = getFarmingSpot(farmMonsterName, farmMap, farmMonsterNr,"coord");
-	if(character.map == farmMap && distance(character, farmspot) < 400)
+	if (specialCoords) farmspot = specialCoords;
+
+	if(character.map == farmMap && distance(character, farmspot) < 350)
 	{
 		return true;
 	}
@@ -306,6 +334,7 @@ function requestMluck()
 
 function checkBuffs()
 {
+	if (soloMode && !parent.party_list.includes(merchantName)) return;
 	if (character.name === merchantName || farmMonsterName === "ent") return;
 	let mluck = false;
 	//let elixir = false;
@@ -332,6 +361,16 @@ function checkBuffs()
 	if (!mluck)
 	{
 		requestMluck();
+	}
+
+
+	if(character.name == warriorName)
+	{
+		if(!character.slots.elixir)
+		{
+			let loc = locate_item("elixirluck");
+			use(loc);
+		}
 	}
 
 	//elixir = checkElixirBuff();
@@ -399,7 +438,31 @@ function checkPotionInventory()
 	let hPotions = quantity(hPot);
 	let mPotions = quantity(mPot);
 
-	if (mPotions < mPotionThreshold || hPotions < hPotionThreshold)
+	if (soloMode && !parent.party_list.includes(merchantName))
+	{
+		if (hPotions == 0 || mPotions == 0)
+		{
+			log(character.name + " has no potions, is returning to town.");
+			farmingModeActive = false;
+
+			if (!returningToTown && !traveling)
+			{
+				traveling = true;
+				goBackToTown();
+
+				setTimeout(() =>
+				{
+					log(character.name + " attempting to buy potions.");
+					buy_with_gold(hPot, healthPotsNeeded);
+					buy_with_gold(mPot, manaPotsNeeded);
+
+					traveling = false;
+				}, 10000);
+			}
+		}
+	}
+
+	else if (mPotions < mPotionThreshold || hPotions < hPotionThreshold)
 	{
 		let healthPotsNeeded = potionMax - hPotions;
 		let manaPotsNeeded = potionMax - mPotions;
@@ -474,7 +537,7 @@ function doCombat(){
 		target = singleTargetCombat();
 	}
 	
-
+	if(character.ctype === "priest") priestSkills(target);
 	if(target)
 	{
 		//Kites Target
@@ -536,8 +599,8 @@ function singleTargetCombat()
 		for(id in parent.entities)
 		{
 			let current = parent.entities[id];
-			if(current.type !="monster" || !current.visible || current.dead) continue;
-			if(current.target != mainTank.name) continue;
+			if(current.type !=="monster" || !current.visible || current.dead) continue;
+			if(current.target !== mainTank.name) continue;
 			if(!can_move_to(current)) continue;
 			let c_dist = parent.distance(character,current);
 			let c_hp = (current.hp/current.max_hp);
@@ -557,13 +620,18 @@ function singleTargetCombat()
 
 }
 
-function getTarget(farmTarget){
+function getTarget(farmTarget)
+{
 
 	let target = get_targeted_monster();
 	if(target) return target;
 	
 	if(!target)
 	{
+		if(character.s.burned)
+		{
+			if(character.s.burned.intensity > burnCap) return;
+		} 
 		//Returns monster that targets party-member
 		partyList.forEach(element => {
 			target = get_nearest_monster({target:element});
@@ -598,7 +666,7 @@ function getTarget(farmTarget){
 function autoFight(target){
 	if(!target) return;
 
-	if(specialMonsters.includes(target.mtype) && (character.ctype === "warrior"))
+	if(specialMonsters.includes(target.mtype) && (character.ctype == mainTank.class))
 	{
 		if(target.mtype === "stompy")
 		{
@@ -608,21 +676,37 @@ function autoFight(target){
 		{
 			move(-435,-1882)
 		}
+		
+	}
+
+	if(target.mtype === "fireroamer" && (character.ctype == mainTank.class))
+	{
+		let targetCoords = {x:168,y:-947}
+		if (simple_distance(character,targetCoords) > 10)
+		{
+			move(targetCoords.x,targetCoords.y);
+		}
+
+		
 	}
 
 	if(!is_in_range( target, "attack"))
 	{
-		if (stationary)
+		if (stationary && singleTarget == false)
 		{
 			target = get_nearest_monster({type:farmMonsterName});
 			change_target(target);
 		}
-		else
+		else if (stationary == false)
 		{
 			move(
 				character.x + (target.x - character.x) * 0.2,
 				character.y + (target.y - character.y) * 0.2
 			);
+		}
+		else 
+		{
+			return;
 		}
 	}
 	
@@ -633,15 +717,15 @@ function autoFight(target){
 		// if (character.ctype === "warrior" && ( target.hp < character.attack * 2)) return;
 		// if (( target.hp < character.attack * 1.3) && target.s.burned) return;
 
-		// if (character.ctype === "warrior") equipWeapon();
+		if (character.ctype === "warrior") equipWeapon();
 		window.last_attack = new Date();
 		attack(target).then((message) => {
 			reduce_cooldown("attack", Math.min(character.ping, 250));
 			window.last_attack = new Date(0);
-			// if (character.ctype === "warrior") equipShield();
+			if (character.ctype === "warrior") equipShield();
 		}).catch((message) => {
 		//	log(character.ctype + " attack failed: " + message.reason);
-			// if (character.ctype === "warrior") equipShield();
+			if (character.ctype === "warrior") equipShield();
 		});
 	}
 }
@@ -857,7 +941,8 @@ function adjustedUpgradeChance()
 
 function equipWeapon()
 {
-	if (character.slots.offhand.name === "sshield" || character.slots.offhand.name === "shield")
+	if (!character.slots.offhand) return;
+	if (character.slots.offhand.name == "sshield" || character.slots.offhand.name == "shield" || character.slots.offhand.name == "lantern")
 	{
 
 		equip(40,"offhand")
@@ -871,15 +956,17 @@ function equipWeapon()
 
 function equipShield()
 {
-	if (character.slots.offhand.name === "fireblade")
-	{
-		
-		equip(40,"offhand")
-	}
-	else if (character.slots.offhand.name === "sshield" || character.slots.offhand.name === "shield" )
+	
+	if (!character.slots.offhand) return;
+	if (character.slots.offhand.name == "sshield" || character.slots.offhand.name == "shield"  || character.slots.offhand.name == "lantern")
 	{
 		// do nothing
 		return;
+	}
+	else
+	{
+		
+		equip(40,"offhand")
 	}
 }
 
@@ -979,7 +1066,7 @@ function approachLeader()
 	{
 		let leaderEntity = get_player(mainTank.name);
 		if (character.name == rangerName && Spadar) leaderEntity = get_player("SpadarFaar");
-		if (leaderEntity && isAtFarmSpot() &&  (distance(character,leaderEntity) > 10) )
+		if (leaderEntity && isAtFarmSpot() &&  (distance(character,leaderEntity) > 20) )
 		{
 			move(
 				character.x + (leaderEntity.x - character.x) * 0.2,
@@ -1146,8 +1233,7 @@ function loadEquipment(name)
 			continue;
 		}
 	
-		if (c_Equip && storedItem.name == c_Equip.name 
-		   && storedItem.level == c_Equip.level)  continue;
+		if (c_Equip && storedItem.name == c_Equip.name && storedItem.level == c_Equip.level)  continue;
 
 		for (let i=0; i < character.items.length; i++)
 		{
