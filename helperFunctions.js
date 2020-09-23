@@ -231,7 +231,7 @@ function isAtFarmSpot()
 	let farmspot = getFarmingSpot(farmMonsterName, farmMap, farmMonsterNr,"coord");
 	if (specialCoords) farmspot = specialCoords;
 
-	if(character.map == farmMap && distance(character, farmspot) < 350)
+	if(character.map == farmMap && distance(character, farmspot) < 600)
 	{
 		return true;
 	}
@@ -364,12 +364,27 @@ function checkBuffs()
 	}
 
 
-	if(character.name == warriorName)
+	if(mainTank.name == character.name)
 	{
 		if(!character.slots.elixir)
 		{
 			let loc = locate_item("elixirluck");
-			use(loc);
+			if (loc >= 0 )
+			{
+				use(loc);
+			};
+		}
+	}
+	else 
+	{
+		if(!character.slots.elixir)
+		{
+			let loc = locate_item("pumpkinspice");
+			if (loc >=0 )
+			{
+				use(loc);
+			}
+			
 		}
 	}
 
@@ -531,10 +546,11 @@ function doCombat(){
 		ToT = "Brutus"
 		target = get_target_of(parent.entities[ToT]);
 	}
-	else
+	else 
 	{
-		approachLeader();
 		target = singleTargetCombat();
+		if (farmMonsterName !== "bscorpion") approachLeader();
+		
 	}
 	
 	if(character.ctype === "priest") priestSkills(target);
@@ -542,8 +558,6 @@ function doCombat(){
 	{
 		//Kites Target
 		//kiteTarget(target);
-		//Circles Target
-		//circleTarget(target);
 		//Uses available skills
 		if(character.ctype === "mage") mageSkills(target);
 		if(character.ctype === "priest") priestSkills(target);
@@ -670,11 +684,23 @@ function autoFight(target){
 	{
 		if(target.mtype === "stompy")
 		{
-			move(422,-2423)
+			if(simple_distance(character,specialCoords) > 20 ) 
+			{
+				move(specialCoords.x,specialCoords.y);
+			}
 		}
 		if(target.mtype === "ent")
 		{
 			move(-435,-1882)
+		}
+
+		if(farmMonsterName === "bscorpion")
+		{
+
+			if(character.speed > 35) cruise(35);
+			circleCoords(x=-400, y=-1250, radius=125)
+			// if(simple_distance(character,target)<(character.range*.8))
+
 		}
 		
 	}
@@ -690,9 +716,9 @@ function autoFight(target){
 		
 	}
 
-	if(!is_in_range( target, "attack"))
+	if(is_in_range(target, "attack") == false)
 	{
-		if (stationary && singleTarget == false)
+		if (stationary == true && singleTarget == false)
 		{
 			target = get_nearest_monster({type:farmMonsterName});
 			change_target(target);
@@ -709,23 +735,28 @@ function autoFight(target){
 			return;
 		}
 	}
-	
-	////	from egehawk	////
-	if (!is_on_cooldown("attack") && (!window.last_attack || mssince(window.last_attack) > 500)){
 
+	if (usePattack == true ) //&& pCanAttack == true
+	{
+		if (is_in_range(target, "attack") == false) return;
+		attack(target)
+	}
+	else if (is_on_cooldown("attack") == false && (!window.last_attack || mssince(window.last_attack) > 500))
+	{
+		////	from egehawk	////
 		//	rudimentary hazard achievment 
 		// if (character.ctype === "warrior" && ( target.hp < character.attack * 2)) return;
 		// if (( target.hp < character.attack * 1.3) && target.s.burned) return;
 
-		if (character.ctype === "warrior") equipWeapon();
+		// if (character.ctype === "warrior") equipWeapon();
 		window.last_attack = new Date();
 		attack(target).then((message) => {
 			reduce_cooldown("attack", Math.min(character.ping, 250));
 			window.last_attack = new Date(0);
-			if (character.ctype === "warrior") equipShield();
+			// if (character.ctype === "warrior") equipShield();
 		}).catch((message) => {
 		//	log(character.ctype + " attack failed: " + message.reason);
-			if (character.ctype === "warrior") equipShield();
+			// if (character.ctype === "warrior") equipShield();
 		});
 	}
 }
@@ -870,13 +901,13 @@ function reloadCharacter(name)
 {
     if (name === character.name)
     {
-        say("/pure_eval setTimeout(()=>{parent.start_runner()}, 500)");
+        parent.say("/pure_eval setTimeout(()=>{parent.start_runner()}, 500)");
         parent.stop_runner();
     } 
     else
     {
-        command_character(name, "say(\"/pure_eval setTimeout(()=>{start_runner()}, 500)\")");
-        command_character(name, "say(\"/pure_eval stop_runner();\")");
+        command_character(name, "parent.say(\"/pure_eval setTimeout(()=>{start_runner()}, 500)\")");
+        command_character(name, "parent.say(\"/pure_eval stop_runner();\")");
     }
 }
 
@@ -987,11 +1018,8 @@ function equipLootGear()
 		return;
 	}
 
-	if (character.slots.pants.name !=="wbreeches" )
-	{	
-		delayedEquip(40,"pants")
-	}
-	if (character.slots.shoes.name !=="wshoes" )
+
+	if (character.slots.shoes.name !=="wshoes" && mainTank.name !== character.name)
 	{	
 		delayedEquip(35,"shoes")
 	}
@@ -1010,15 +1038,11 @@ function unequipLootGear()
 	}
 
 	
-	if (character.slots.pants.name !=="pants" )
-	{	
-		delayedEquip(40,"pants")
-	}
-	if (character.slots.shoes.name !=="wingedboots" )
+	if (character.slots.shoes.name !=="wingedboots" && mainTank.name !== character.name )
 	{	
 		delayedEquip(35,"shoes")
 	}
-	if (character.slots.gloves.name !=="gloves" )
+	if (character.slots.gloves.name !=="mittens" )
 	{	
 		delayedEquip(36,"gloves")
 	}
@@ -1038,11 +1062,11 @@ function lootRoutine()
         var current = parent.chests[id];
         if ( current ) totalChests++;
 	}
-	if (totalChests <= 2 && character.slots.gloves.name == "handofmidas")
+	if (totalChests <= 0 && character.slots.gloves.name == "handofmidas")
 	{
 		unequipLootGear();
 	}
-	if (totalChests >= 3 )
+	if (totalChests >= 1 )
 	{
 		equipLootGear();
 		for (id in parent.chests)
@@ -1062,6 +1086,7 @@ function lootRoutine()
 
 function approachLeader()
 {
+	
 	if (character.name !== mainTank.name)
 	{
 		let leaderEntity = get_player(mainTank.name);
@@ -1194,7 +1219,21 @@ function changeServer(name)
   }
 }
 
+function dropAggro() 
+{
+	for(id in parent.entities)
+	{
+		let curr = parent.entities[id];
+		if (curr.target == parent.character.name)
+		{
+			if (is_on_cooldown("scare") == false)
+			{
+				use_skill("scare", curr)
+			}
+		}
 
+	}
+}
 
 
 function saveEquipment(name)
@@ -1249,3 +1288,88 @@ function loadEquipment(name)
 
 
 map_key("B", "snippet", "const draw_text=(n,r,t) => { let a=new PIXI.Text(n,{fontFamily:parent.SZ.font,fontSize:36,fontWeight:\"bold\",fill:21760,align:\"center\"});a.x=r,a.y=t,a.type=\"text\",a.scale=new PIXI.Point(.5,.5),a.parentGroup=parent.text_layer,a.anchor.set(.5,1),parent.drawings.push(a),parent.map.addChild(a)},areas=G.maps[character.in].monsters,colors={boundary:21760,rage:11141120};for(const n in areas){const r=areas[n];for(const n in colors)if(n in r){const t=r[n][0],a=r[n][1],o=r[n][2],e=r[n][3],s=Math.round((t+o)/2),l=Math.round(a+Math.random()*(e-a));\"boundary\"===n&&draw_text(r.type+\": \"+r.count,s,l),draw_line(t,a,o,a,2,colors[n]),draw_line(o,a,o,e,2,colors[n]),draw_line(o,e,t,e,2,colors[n]),draw_line(t,e,t,a,2,colors[n])}}");
+
+// function draw_spawns()
+// {
+// 	const draw_text=(n,r,t) => 
+// 	{ 
+// 		let a=new PIXI.Text(n,
+// 		{
+// 			fontFamily:parent.SZ.font,
+// 			fontSize:36,
+// 			fontWeight:"bold",
+// 			fill:21760,
+// 			align:"center"
+// 		});
+// 		a.x=r,
+// 		a.y=t,
+// 		a.type="text",
+// 		a.scale=new PIXI.Point(.5,.5),
+// 		a.parentGroup=parent.text_layer,
+// 		a.anchor.set(.5,1),
+// 		parent.drawings.push(a),
+// 		parent.map.addChild(a)
+// 	}
+// 	areas=G.maps[character.in].monsters,
+// 	colors={boundary:21760,rage:11141120};
+// 	for(const n in areas)
+// 	{
+// 		const r=areas[n];
+// 		for(const n in colors)
+// 		{
+// 			if(n in r)
+// 			{
+// 				const t=r[n][0],
+// 				a=r[n][1],o=r[n][2],
+// 				e=r[n][3],
+// 				s=Math.round((t+o)/2),l=Math.round(a+Math.random()*(e-a));
+// 				\"boundary\"===n&&draw_text(r.type+\": \"+r.count,s,l),
+// 				draw_line(t,a,o,a,2,colors[n]),
+// 				draw_line(o,a,o,e,2,colors[n]),
+// 				draw_line(o,e,t,e,2,colors[n]),
+// 				draw_line(t,e,t,a,2,colors[n])
+// 			}
+// 		}
+// 	}
+// }
+
+
+// 		from egehanhk		//
+// Sure, you know when you run a code character that character is run in an iframe. 
+// You can access that iframe and therefore the entire context of that character.
+// To get the parent of a code character you can do this
+// From the code character's perspective it's easier to find the parent of the main character. You just use parent.parent
+
+function get_parent(name, is_master) {
+    if (is_master) {
+        return parent.parent;
+    } else {
+        const char_iframe = parent.parent.$("#ichar"+name.toLowerCase())[0];
+        if (char_iframe) {
+            return char_iframe.contentWindow;
+        }
+    }
+}
+
+
+
+function characterStore()
+{
+	let data = {
+		// "lastSeen": new Date(),
+		// "items": getInventory(),
+		// "attack": character.attack,
+		// "frequency": character.frequency,
+		// "goldm": character.goldm,
+		// "last_ms": character.last_ms,
+		// "luckm": character.luckm,
+		"name": character.name,
+		"class": character.ctype,
+		"map": character.map,
+		"x": character.real_x,
+		"y": character.real_y,
+		"s": character.s,
+		"items": character.items
+	}
+	set(`characterStore_${character.name}`,data)
+}

@@ -5,10 +5,11 @@ function warriorSkills(target, farmMonsterName)
     if ( !singleTarget )
     {
         warriorCharge(target);
+        warriorWarcry(target);
+        if(mainTank.name !== character.name && Spadar == "false") return; 
         warriorTaunt(target);
         // warriorAOETaunt(target);
-        warriorWarcry(target);
-        warriorCleave(target);
+        // warriorCleave(target);
         return;
     }
     else if ( Spadar )
@@ -25,7 +26,7 @@ function warriorSkills(target, farmMonsterName)
         warriorHardshell(target);
         warriorWarcry(target);
         // warriorStomp(target);
-        // if(mainTank.name !== character.name && Spadar == "false") return;
+        if(mainTank.name != character.name && Spadar == "false") return;
         warriorTaunt(target);
         warriorEarlyTaunt(target);
         return;
@@ -96,7 +97,7 @@ function warriorEarlyTaunt(currentTarget)
             if(c_dist<min_d) min_d=c_dist,target=current;
         }
         
-        if ( ( simple_distance(character,target) < G.skills.taunt.range ) && !is_on_cooldown("taunt") && character.mp > G.skills.taunt.mp)
+        if ( target && (simple_distance(parent.character,target) < G.skills.taunt.range ) && !is_on_cooldown("taunt") && character.mp > G.skills.taunt.mp)
         {
             use_skill("taunt",target);
             change_target(currentTarget);
@@ -132,7 +133,7 @@ function warriorAOETaunt(target)
 
 function warriorCharge(target)
 {
-    if ( (distance(character, target) > 50) && !is_on_cooldown("charge") && character.mp > G.skills.charge.mp )
+    if ( (distance(character, target) > 50) && !is_on_cooldown("charge") )
     {
         use_skill("charge");
     }

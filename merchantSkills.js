@@ -3,6 +3,8 @@ var deliveryMode = false;		//	true when the merchant has requests it needs to fu
 var exchangeMode = false;		//	true when the merchant is busy exchanging items with an npc
 var deliveryShipments = [];
 var deliveryRequests = [];
+let ponty_enable = true;
+let upgrade_enable = true;
 
 function merchantOnStart()
 {
@@ -11,34 +13,36 @@ function merchantOnStart()
 	enableVendorMode();
 }
 
-function merchantSkills(){
+function merchantSkills()
+{
 	checkRequests();
 	// specialParty();
-
+	dropAggro();
 	if(is_moving(character) || smart.moving || deliveryMode)
 	{
 		return;
 	}
 
-	if(vendorMode){
-	sellTrash();
-	tidyInventory();
-	merchantsLuck();
-	buyCheapStuff();
-	upgradeItems();
-	buyScrolls();
-	// buyVendorUpgrade();
-	pontyPurchase();
-	// exchangeGems();
+	if(vendorMode)
+	{
+		sellTrash();
+		tidyInventory();
+		merchantsLuck();
+		buyCheapStuff();
+		buyScrolls();
+		// buyVendorUpgrade();
+		if(ponty_enable == true) pontyPurchase();
+		// exchangeGems();
 
-
-	
-	//compound process
-	if(findTriple(0)) compoundItems(0);
-	if(findTriple(1)) compoundItems(1);
-	if(findTriple(2)) compoundItems(2);
-	// if(findTriple(3)) compoundItems(3);
-
+		if (upgrade_enable == true)
+		{
+			upgradeItems();
+			//compound process
+			if(findTriple(0)) compoundItems(0);
+			if(findTriple(1)) compoundItems(1);
+			if(findTriple(2)) compoundItems(2);
+			// if(findTriple(3)) compoundItems(3);
+		}
 
 	};
 
@@ -81,7 +85,8 @@ function enableVendorMode()
 
 function disableVendorMode()
 {
-	log("Merchant exited vendor mode.");
+	if(vendorMode == false) return;
+	// log("Merchant exited vendor mode.");
 
 	parent.close_merchant();
 	vendorMode = false;
@@ -578,7 +583,7 @@ function deliverItems(shipmentToDeliver)
 function deliverPotions(shipment)
 {
 	let recipient = parent.entities[shipment.name];
-	if (distance(recipient, character) < 200)
+	if (distance(recipient, character) < 400)
 	{
 		log("Delivering potions to " + shipment.name);
 		let index = deliveryShipments.indexOf(shipment);
@@ -633,7 +638,7 @@ function merchantAuto(target)
 	}
 	
 	//	keep magic luck on yourself
-	if (!checkMluck(character) && !is_on_cooldown("mluck"))
+	if (checkMluck(character) == false && !is_on_cooldown("mluck"))
 	{
 		use_skill("mluck", character);
 		reduce_cooldown("mluck", character.ping);
@@ -659,7 +664,7 @@ function merchantAuto(target)
 				{
 					deliverItems(shipment);
 				}
-				else if (!checkMluck(friendlyTarget))
+				else if (checkMluck(friendlyTarget) == false)
 				{
 					log("Giving mluck to " + friendlyTarget.name);
 					use_skill("mluck", friendlyTarget);
@@ -675,7 +680,7 @@ function merchantAuto(target)
 		else if (friendlyTarget)
 		{
 			//	mluck others but some safety checks to make sure you don't spam it
-			if (!is_on_cooldown("mluck") && !checkMluck(friendlyTarget) && is_in_range(friendlyTarget, "mluck") && !friendlyTarget.afk && !friendlyTarget.stand && character.mp > character.max_mp * 0.5)
+			if (!is_on_cooldown("mluck") && checkMluck(friendlyTarget) == false && is_in_range(friendlyTarget, "mluck") && friendlyTarget.afk == true && !friendlyTarget.stand && character.mp > character.max_mp * 0.5)
 			{
 				log("Giving mluck to " + friendlyTarget.name);
 				use_skill("mluck", friendlyTarget);
@@ -696,38 +701,15 @@ function specialParty()
 // Adapted From Lotus
 function pontyPurchase()
 {
-	// parent.socket.emit("secondhands");
+	parent.socket.emit("secondhands");
     let itemsToBuy = buyFromPonty;
     parent.socket.once("secondhands", function (data)
     {    
         for (let pontyItem of data)
         {
             let buy = false;
-            if (pontyItem.p)
-            {
-                log("Found shiny ponty item : " + G.items[pontyItem.name].name);
-                buy = true;
-            }
-
             if ( (buyFromPonty.includes(pontyItem.name)) && (!trashName.includes(pontyItem.name)) )
             {
-            //     if (upgradeItemList.includes(pontyItem.name) || combineItemList.includes(pontyItem.name))
-            //     {
-            //         if (upgradeItemList.includes(pontyItem.name) && (pontyItem.level <= upgradeItemLevel2))
-            //         {
-            //             buy = true;
-            //             log("found upgrade item at ponty " + pontyItem.name)
-            //         }
-            //         else if (combineItemList.includes(pontyItem.name) && (pontyItem.level <= 3))
-            //         {
-            //             buy = true;
-            //             log("found compound item at ponty " + pontyItem.name)
-            //         }
-            //     }
-            // }
-                
-            // else
-            // {
                 buy = true;
             }
 
@@ -740,5 +722,47 @@ function pontyPurchase()
         }
     });
 
-    parent.socket.emit("secondhands");
+    // parent.socket.emit("secondhands");
+}
+
+function pontyToggle()
+{
+	if (ponty_enable == true)
+	{
+		ponty_enable = false;
+		log("Ponty is disabled")
+	}
+	else if (ponty_enable == false)
+	{
+		ponty_enable = true;
+		log("Ponty is enabled")
+
+	}
+}
+
+function upgradeToggle()
+{
+	if (upgrade_enable == true)
+	{
+		upgrade_enable = false;
+		log("upgrade is disabled")
+	}
+	else if (upgrade_enable == false)
+	{
+		upgrade_enable = true;
+		log("upgrade is enabled")
+
+	}
+}
+
+function checkMluck(player)
+{
+	if(!player.s.mluck) return false;
+	if(player.s.mluck.strong) 
+	{
+		if(player.s.mluck.f != character.name) return true;
+	}
+	if(player.s.mluck.ms>3345000) return true;
+	
+
 }

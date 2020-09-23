@@ -1,6 +1,6 @@
 //  settings    //
 let hurtPartyMembers = 0;
-let healingThreshold = (character.attack * .9);
+let healingThreshold = (character.attack * .8);
 let partyHealThreshold = findPartyHealValue() + G.items[hPot].gives[0][1];
 
 
@@ -48,7 +48,7 @@ function priestSelfHeal (oldTarget)
     {
         
         heal(character);
-        change_target(oldTarget);
+       // change_target(oldTarget);
     //    game_log("selfheal");
     }
 
@@ -89,7 +89,7 @@ function priestSingleHeal(oldTarget)
         // log(character.name + " Heal failed: " + message.reason);
     })};
     
-    change_target(oldTarget);
+   // change_target(oldTarget);
 }
 
 function priestCurse(target)

@@ -3,14 +3,6 @@
 //Custom Settings
 //Farming spots are found in G.maps.main
 
-//const farmMonsterName = "bee";
-//const farmMap = "main";
-//const farmMonsterNr = 4;
-
-// const farmMonsterName = "crabx";
-// const farmMap = "main";
-// const farmMonsterNr = 5;
-// const singleTarget = false;
 
 // //  boars
 // const stationary = false;
@@ -29,13 +21,33 @@
 // const farmMonsterNr = 5;
 
 
-// // Wolf
+// Wolf
+const stationary = false;
+const singleTarget = true;
+const farmMonsterName = "wolf";
+const farmMap = "winterland";
+const farmMonsterNr = 7;
+const extraAggroLimit = 2;
+const specialCoords = {x:422, y:-2423};
+
+// // prat
+// const stationary = false;
+// const singleTarget = false;
+// const farmMonsterName = "prat";
+// const farmMap = "level1";
+// const farmMonsterNr = 5;
+// const extraAggroLimit = 0;
+// const specialCoords = {x:150,y:100};
+
+// // bscorpion
 // const stationary = false;
 // const singleTarget = true;
-// const farmMonsterName = "wolf";
-// const farmMap = "winterland";
-// const farmMonsterNr = 7;
-// const extraAggroLimit = 2;
+// const farmMonsterName = "bscorpion";
+// const farmMap = "desertland";
+// const farmMonsterNr = 1;
+// const extraAggroLimit = 0;
+// const specialCoords = {x:-550,y:-1300};
+
 
 // // pppompom
 // const stationary = false;
@@ -45,13 +57,14 @@
 // const farmMonsterNr = 6;
 // const extraAggroLimit = 0;
 
-// // plantoid
+// // // plantoid
 // const stationary = false;
 // const singleTarget = true;
 // const farmMonsterName = "plantoid";
 // const farmMap = "desertland";
 // const farmMonsterNr = 4;
 // const extraAggroLimit = 0;
+// const specialCoords = {x:-800,y:-400};
 
 // //squigs, frogs, other stuff
 // const specialCoords = {x:-1140,y:800};
@@ -71,14 +84,14 @@
 // const extraAggroLimit = 1;
 // const specialCoords = false;
 
-// goo    
-const stationary = false;
-const singleTarget = false;
-const farmMonsterName = "goo";
-const farmMap = "main";
-const farmMonsterNr = 9;
-const extraAggroLimit = 50;
-const specialCoords = false;
+// // goo    
+// const stationary = false;
+// const singleTarget = false;
+// const farmMonsterName = "goo";
+// const farmMap = "main";
+// const farmMonsterNr = 9;
+// const extraAggroLimit = 50;
+// const specialCoords = false;
 
 
 
@@ -132,12 +145,6 @@ const specialCoords = false;
 // // const Spadar = false;
 
 
-// const stationary = false;
-// const singleTarget = true;
-// const farmMonsterName = "gredpro";
-// const farmMap = "mansion_u";
-// const farmMonsterNr = 1;
-
 // //  crocs
 // const stationary = false;
 // const singleTarget = false;
@@ -147,13 +154,9 @@ const specialCoords = false;
 
 
 
-// const stationary = true;
-// const singleTarget = false;
-// const farmMonsterName = "rat";
-// const farmMap = "mansion";
-// const farmMonsterNr = 5;
 
-const specialMonsters = ["snowman","goldenbat","stompy","ent","fvampire","phoenix","frog","squigtoad","tortoise","squig"]; 
+
+const specialMonsters = ["snowman","goldenbat","stompy","fvampire","phoenix","frog","squigtoad","tortoise","squig"]; 
 
 
 //  Defining Characters
@@ -163,15 +166,14 @@ const priestName = "Matiiiin";
 const rangerName = "Matiin";
 const mageName = "Matiiin";
 const warriorName = "Matin";
-const partyList = [mageName, rangerName, priestName, merchantName]; //merchantName  merchantName
+const partyList = [warriorName, rogueName, priestName, merchantName]; //merchantName  merchantName
 const whiteList = ["Matin","Matiin","Matiiin","Matiiiin","Matiiiiin","Matiiiiiin"];
 const Spadar = false;
 const externalParty = [];
 const burnCap = 1800;
 
 //  class of your main tank
-const mainTank = {name: rangerName, class: "ranger"};
-// const mainTank = {name: priestName, class: "priest"};
+const mainTank = {name: warriorName, class: "warrior"};
 const offTank = {name: priestName, class: "priest"};
 const mainLooter = {name: priestName, class: "priest"};
 const soloMode = false;
@@ -188,7 +190,7 @@ const hPotionThreshold = 500;
 const potionMax = 5000;
 
 //  inventory management
-const reserveMoney = 50000000;
+const reserveMoney = 150000000;
 const reserveMoneyCombat = 5000000;
 const minNormalCompoundScrolls = 10;
 const minRareCompoundScrolls = 3;
@@ -197,12 +199,13 @@ const minRareUpgradeScrolls = 5;
 const inventoryMax = 31;
 const merchantStandMap = "main";
 const merchantStandCoords = {x:-127, y:-124};
-const itemsToKeep = [mPot, hPot, "tracker","handofmidas","goldbooster","lantern","luckbooster","xpbooster","elixirluck"];
-const equipmentToKeep = ["test_orb","sshield","fireblade","shield","pants","helmet","gloves","wingedboots","wshoes","handofmidas","wcap","wbreeches","bataxe","basher"];
+const itemsToKeep = [mPot, hPot, "tracker","handofmidas","goldbooster","lantern","luckbooster","xpbooster","elixirluck","pumpkinspice","computer"];
+const equipmentToKeep = ["wgloves","test_orb","sshield","fireblade","shield","pants","helmet","gloves","wingedboots","wshoes","handofmidas","wcap","wbreeches","bataxe","basher","mittens"];
 
 
 const trashName = ["hpbelt","hpring","hpearring","hpamulet","vitearring","vitring","ringsj",
-                    "wattire","wgloves","wbreeches","wshoes","wcap","stinger","stramulet","cclaw","quiver","slimestaff"];
+                    "wattire","wgloves","wbreeches","wshoes","wcap","stinger","stramulet","cclaw","quiver","slimestaff",
+                    "wbook0"];
 
 
 //  Upgrade stuff
@@ -220,10 +223,10 @@ const upgradeItemList = ["bow","staff","helmet","shoes","gloves","pants","coat",
 const combineItemList = ["intring","strring","dexring","intearring","strearring","dexearring","intamulet","dexamulet"];
 const vendorUpgradeList = ["gloves","helmet","coat"]; 	
 const specialItems = ["firestaff","firesword","seashell","offering","essenceofire","leather","fury","vitscroll","lspores","gem0","seashell"];
-const buyFromPonty = ["intring","strring","dexring",,"intbelt","strbelt","dexbelt","wbook0",
+const buyFromPonty = ["intring","strring","dexring",,"intbelt","strbelt","dexbelt",
                         "coat1","gloves1","pants1","helmet1","hhelmet","harmor","hpants","hgloves","rattail","spores",
                         "xmassweater","mshield","oozingterror","harbringer","eggnog","crabclaw","poison","spidersilk","beewings","fury",
-                        "intearring","strearring","dexearring","essenceoflife","whitegg","rattail","seashell","dstones"];
+                        "intearring","strearring","dexearring","essenceoflife","whitegg","rattail","seashell","dstones","hammer","offeringp"];
 
 // let merchantStatus = {idle: true, hasBeenTeleported: false};
 // let mluckRecently = false;
@@ -249,7 +252,7 @@ if(character.ctype == "warrior") load_code(9);   //warriorSkills
 load_code(11);  //logging
 if (character.ctype == mainTank.class) load_code(12);  //GUI
 if(character.ctype == "rogue") load_code(13);  //rogueSkills
-
+load_code(15);   //pattack
 
 
 
@@ -275,40 +278,29 @@ function onStart()
 
 
 setInterval(main, 100); // Loops every 1/10 seconds
-setInterval(tier2Actions, 3000); // Loops every 3 seconds.
+setInterval(tier2Actions, 1000); // Loops every 1 second.
 setInterval(respawnProcess, 15000);
 setInterval(tier3Actions, 7500);
 
 function main(){
 
+
     //If Character is dead, respawn
     if (character.rip) setTimeout(respawn, 15000);  
-
-    //  finish what you are doing before checking past here
-    if ( smart.moving || returningToTown )     return;
-    // if (is_moving(character) || smart.moving || returningToTown )     return;
-
-     
-    if (character.name == merchantName)     standCheck();
-
-    //Replenish Health and Mana
+    if (character.ctype == "merchant") dropAggro();
     usePotions();
     //Loot everything
     if (!Spadar)
     {
         if(soloMode)
-        {
             loot();
-            
-        }
         else if (character.ctype == mainLooter.class)
-        {
-            lootRoutine();
-        }
-        
+            lootRoutine();        
     }
-    
-    
+
+    if ( smart.moving || returningToTown )     return;
+    if (character.name == merchantName)     standCheck();
+
     //Merchant Skills are Tier 2 actions
     if(character.ctype === "merchant") return;
 
@@ -320,7 +312,8 @@ function tier2Actions(){
     transferLoot(merchantName);
     checkPotionInventory();
     checkBuffs();
-
+    characterStore();
+    checkSentRequests();
     
     //Run Merchant Skills
     if(character.ctype === "merchant"){
@@ -334,7 +327,7 @@ function tier2Actions(){
 }
 
 function tier3Actions(){
-    checkSentRequests();
+    
 }
 
 function respawnProcess()
