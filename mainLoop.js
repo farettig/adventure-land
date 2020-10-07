@@ -21,14 +21,23 @@
 // const farmMonsterNr = 5;
 
 
-// Wolf
+// // Wolf
+// const stationary = false;
+// const singleTarget = true;
+// const farmMonsterName = "wolf";
+// const farmMap = "winterland";
+// const farmMonsterNr = 7;
+// const extraAggroLimit = 2;
+// const specialCoords = {x:422, y:-2423};
+
+// xscorp
 const stationary = false;
 const singleTarget = true;
-const farmMonsterName = "wolf";
-const farmMap = "winterland";
-const farmMonsterNr = 7;
+const farmMonsterName = "xscorpion";
+const farmMap = "halloween";
+const farmMonsterNr = 6;
 const extraAggroLimit = 2;
-const specialCoords = {x:422, y:-2423};
+const specialCoords = {x:-253, y:731};
 
 // // prat
 // const stationary = false;
@@ -156,7 +165,7 @@ const specialCoords = {x:422, y:-2423};
 
 
 
-const specialMonsters = ["snowman","goldenbat","stompy","fvampire","phoenix","frog","squigtoad","tortoise","squig"]; 
+const specialMonsters = ["snowman","goldenbat","stompy","fvampire","frog","squigtoad","tortoise","squig"]; //"phoenix"
 
 
 //  Defining Characters
@@ -218,12 +227,12 @@ const mluckDuration = 3600000;
 
 const upgradeItemList = ["bow","staff","helmet","shoes","gloves","pants","coat","xmashat",
                         "eslippers","eears", "epyjamas","t2bow","carrotsword","merry","cclaw",
-                        "wingedboots","cclaw","xmassweater","pmace","coat1","gloves1","pants1","helmet1"]; 
+                        "wingedboots","cclaw","xmassweater","pmace","coat1","gloves1","pants1","helmet1","cape"]; 
 
 const combineItemList = ["intring","strring","dexring","intearring","strearring","dexearring","intamulet","dexamulet"];
 const vendorUpgradeList = ["gloves","helmet","coat"]; 	
-const specialItems = ["firestaff","firesword","seashell","offering","essenceofire","leather","fury","vitscroll","lspores","gem0","seashell"];
-const buyFromPonty = ["intring","strring","dexring",,"intbelt","strbelt","dexbelt",
+const specialItems = ["glitch","firestaff","firesword","seashell","offering","essenceofire","leather","fury","vitscroll","lspores","gem0","seashell"];
+const buyFromPonty = ["glitch","intring","strring","dexring",,"intbelt","strbelt","dexbelt",
                         "coat1","gloves1","pants1","helmet1","hhelmet","harmor","hpants","hgloves","rattail","spores",
                         "xmassweater","mshield","oozingterror","harbringer","eggnog","crabclaw","poison","spidersilk","beewings","fury",
                         "intearring","strearring","dexearring","essenceoflife","whitegg","rattail","seashell","dstones","hammer","offeringp"];
@@ -250,7 +259,7 @@ if(character.ctype == "priest") load_code(5);   //priestSkills
 if(character.ctype == "ranger") load_code(6);   //rangerSkills
 if(character.ctype == "warrior") load_code(9);   //warriorSkills
 load_code(11);  //logging
-if (character.ctype == mainTank.class) load_code(12);  //GUI
+// if (character.ctype == mainTank.class) load_code(12);  //GUI
 if(character.ctype == "rogue") load_code(13);  //rogueSkills
 load_code(15);   //pattack
 
@@ -314,6 +323,7 @@ function tier2Actions(){
     checkBuffs();
     characterStore();
     checkSentRequests();
+    sellTrash();
     
     //Run Merchant Skills
     if(character.ctype === "merchant"){

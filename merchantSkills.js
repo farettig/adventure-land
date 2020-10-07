@@ -167,28 +167,6 @@ function buyVendorUpgrade(){
 	}
 }
 
-function sellTrash(){
-	
-	for(let i = 0; i <= 41; i++){
-		if(character.items[i]
-		   && (trashName.indexOf(character.items[i].name) !== -1)
-		   && (!item_grade(character.items[i]) > 0)
-		   && (character.items[i].level == 0)
-		   && (!character.items[i].p)) 
-		{
-			log("Merchant is unloading trash: " + character.items[i].name);
-			// if(G.items[character.items[i].name].type === "material")
-			// {
-			// 	sell(i, character.items[i].q);
-			// }
-			// else
-			// {
-				sell(i, character.items[i]);
-			// }
-		}
-	}		
-}
-
 function exchangeGems()
 {
 	for(let i = 0; i <= 41; i++){
@@ -359,18 +337,8 @@ function openMerchantStand(){
 
 function merchant_on_cm(sender, data)
 {
-	if (data.message == "buyPots")
-	{
-		if (deliveryRequests.find((x) => { if (x.request == "potions" && x.sender == sender) return x; }))
-		{
-			log("Already have potion request from " + sender);
-			return;
-		}
 
-		log("Recieved potion request from " + sender);
-		deliveryRequests.push({ request: "potions", sender: sender, shipment: null, hPots: data.hPots, mPots: data.mPots, x: data.x, y: data.y, map: data.map });
-	}
-	else if (data.message == "mluck")
+	if (data.message == "mluck")
 	{
 		if (deliveryRequests.find((x) => { if (x.request == "mluck") return x; }))
 		{
@@ -452,13 +420,8 @@ function checkRequests()
 
 		for (let i = 0; i < deliveryRequests.length; i++)
 		{
-			//	go buy potions
-			if (deliveryRequests[i].request == "potions" && !deliveryRequests[i].shipment)
-			{
-				buyPotionsFor(deliveryRequests[i].sender, deliveryRequests[i].hPots, deliveryRequests[i].mPots);
-			}
 			//	deliver to recipient
-			else if (deliveryRequests[i].shipment || deliveryRequests[i].request == "mluck")
+			if (deliveryRequests[i].shipment || deliveryRequests[i].request == "mluck")
 			{
 				let recipient = deliveryRequests[i];
 				
@@ -508,96 +471,16 @@ function standCheck()
 	}
 }
 
-function buyPotionsFor(name, healthPots, manaPots)
-{
-	let request = deliveryRequests.find((x) =>
-	{
-		if (x.sender == name && x.request == "potions")
-		{
-			return x;
-		}
-	});
-
-	if (!request)
-	{
-		log("Attempting to buy potions but don't have request");
-		return;
-	}
-
-	if (getEmptyInventorySlotCount() < 8)
-	{
-		sellTrash();
-
-		if (getEmptyInventorySlotCount() < 8 && (!hasUpgradableItems() && craftingOn))
-		{
-			log("Need inventory space to buy potions, going to bank.");
-			disableVendorMode();
-			depositInventoryAtBank();
-			return;
-		}
-		else
-		{
-			log("Continuing to craft in order to free inventory space.");
-		}
-	}
-
-	if (!isInTown())
-	{
-		log("Returning to buy potions...");
-		goBackToTown();
-		return;
-	}
-
-	let h = healthPots - quantity(hPot);
-	let m = manaPots - quantity(mPot);
-
-	if (h > 0)
-	{
-		buy_with_gold(hPot, h);
-		log("Buying " + healthPots + " health potions");
-	}
-
-	if (m > 0)
-	{
-		buy_with_gold(mPot, m);
-		log("Buying " + manaPots + " mana potions");
-	}
-
-	let potionShipment = { name: name, hPots: healthPots, mPots: manaPots };
-	deliveryShipments.push(potionShipment);
-	request.shipment = potionShipment;
-}
 
 function deliverItems(shipmentToDeliver)
 {
-	if (shipmentToDeliver.hPots != null || shipmentToDeliver.mPots != null)
-	{
-		deliverPotions(shipmentToDeliver);
-	}
-	else if (shipmentToDeliver.elixir != null)
+	
+	if (shipmentToDeliver.elixir != null)
 	{
 		deliverElixir(shipmentToDeliver);
 	}
 }
 
-function deliverPotions(shipment)
-{
-	let recipient = parent.entities[shipment.name];
-	if (distance(recipient, character) < 400)
-	{
-		log("Delivering potions to " + shipment.name);
-		let index = deliveryShipments.indexOf(shipment);
-		deliveryShipments.splice(index, 1);
-		send_item(shipment.name, locate_item(hPot), shipment.hPots-1);
-		send_item(shipment.name, locate_item(mPot), shipment.mPots-1);
-		//send_item(shipment.name, locate_item(hPot), quantity(hPot));
-		//send_item(shipment.name, locate_item(mPot), quantity(mPot));
-	}
-	else
-	{
-		approachTarget(recipient);
-	}
-}
 
 function moveToRequest(request)
 {

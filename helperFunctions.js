@@ -421,14 +421,6 @@ function checkSentRequests()
 				recieved = true;
 			}
 		}
-		else if (sentRequests[i].message == "potions")
-		{
-			if (checkPotionInventory())
-			{
-				log("Potions recieved. Thank you!");
-				recieved = true;
-			}
-		}
 		else if (sentRequests[i].message == "elixir")
 		{
 			if (checkElixirBuff())
@@ -446,92 +438,52 @@ function checkSentRequests()
 	}
 }
 
+
+function sellTrash(){
+	
+	for(let i = 0; i <= 41; i++){
+		if(character.items[i]
+		   && (trashName.indexOf(character.items[i].name) !== -1)
+		   && (!item_grade(character.items[i]) > 0)
+		   && (character.items[i].level == 0)
+		   && (!character.items[i].p)) 
+		{
+			log("Merchant is unloading trash: " + character.items[i].name);
+			// if(G.items[character.items[i].name].type === "material")
+			// {
+			// 	sell(i, character.items[i].q);
+			// }
+			// else
+			// {
+				sell(i, character.items[i]);
+			// }
+		}
+	}		
+}
+
+
 function checkPotionInventory()
 {
 	// merchant shouldn't check for potions himself - this breaks the routine.
 	if (character.name === merchantName) return;
+	
 	let hPotions = quantity(hPot);
 	let mPotions = quantity(mPot);
 
-	if (soloMode && !parent.party_list.includes(merchantName))
+
+	let healthPotsNeeded = potionMax - hPotions;
+	let manaPotsNeeded = potionMax - mPotions;
+
+	if(healthPotsNeeded > 2000)
 	{
-		if (hPotions == 0 || mPotions == 0)
-		{
-			log(character.name + " has no potions, is returning to town.");
-			farmingModeActive = false;
+		buy_with_gold(hPot, healthPotsNeeded);
 
-			if (!returningToTown && !traveling)
-			{
-				traveling = true;
-				goBackToTown();
-
-				setTimeout(() =>
-				{
-					log(character.name + " attempting to buy potions.");
-					buy_with_gold(hPot, healthPotsNeeded);
-					buy_with_gold(mPot, manaPotsNeeded);
-
-					traveling = false;
-				}, 10000);
-			}
-		}
+	}
+	if(manaPotsNeeded > 2000)
+	{
+		buy_with_gold(mPot, manaPotsNeeded);
 	}
 
-	else if (mPotions < mPotionThreshold || hPotions < hPotionThreshold)
-	{
-		let healthPotsNeeded = potionMax - hPotions;
-		let manaPotsNeeded = potionMax - mPotions;
-
-		if (healthPotsNeeded < 0)
-		{
-			healthPotsNeeded = 0;
-		}
-		if (manaPotsNeeded < 0)
-		{
-			manaPotsNeeded = 0;
-		}
-
-		let data = { message: "buyPots", hPots: healthPotsNeeded, mPots: manaPotsNeeded, x: character.x, y: character.y, map: character.map };
-		send_cm(merchantName, data);
-
-		if (sentRequests.find((x) => { if (x.message == "potions") return x; }))
-		{
-			log(character.name + " waiting for potions, resending request... ");
-
-			//	try to fix the problem yourself if the merchant isn't responding
-			if (hPotions == 0 || mPotions == 0)
-			{
-				log(character.name + " has no potions, is returning to town.");
-				farmingModeActive = false;
-
-				if (!returningToTown && !traveling)
-				{
-					traveling = true;
-					goBackToTown();
-
-					setTimeout(() =>
-					{
-						log(character.name + " attempting to buy potions.");
-						buy_with_gold(hPot, healthPotsNeeded);
-						buy_with_gold(mPot, manaPotsNeeded);
-
-						traveling = false;
-					}, 10000);
-				}
-			}
-		}
-		else
-		{
-			log(character.name + " sending request for potions");
-			sentRequests.push({ message: "potions", name: merchantName });
-		}
-
-		return false;
-	}
-	else
-	{
-		return true;
-	}
 }
 
 function doCombat(){
@@ -1024,8 +976,9 @@ function equipLootGear()
 		delayedEquip(35,"shoes")
 	}
 	if (character.slots.gloves.name !=="handofmidas" )
-	{	
-		delayedEquip(36,"gloves")
+	{
+		let slot = locate_item("handofmidas")
+		delayedEquip(slot,"gloves")
 	}
 
 }
@@ -1043,8 +996,9 @@ function unequipLootGear()
 		delayedEquip(35,"shoes")
 	}
 	if (character.slots.gloves.name !=="mittens" )
-	{	
-		delayedEquip(36,"gloves")
+	{
+		let slot = locate_item("mittens")
+		delayedEquip(slot,"gloves")
 	}
 
 }
@@ -1373,3 +1327,9 @@ function characterStore()
 	}
 	set(`characterStore_${character.name}`,data)
 }
+
+
+//	From Rising	 //
+function hasTitle(item){
+	return item && item.p && Object.keys(G.titles).includes(item.p)
+  }
