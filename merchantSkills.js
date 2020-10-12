@@ -539,7 +539,7 @@ function merchantAuto(target)
 
 		if (isPartyMember && friendlyTarget)
 		{
-			if (distance(friendlyTarget, character) < 100)
+			if (simple_distance(friendlyTarget, character) < 300)
 			{
 				let shipment = getShipmentFor(friendlyTarget.name);
 
@@ -557,7 +557,7 @@ function merchantAuto(target)
 			else if (deliveryMode && !smart.moving && !returningToTown && deliveryRequests.length > 0 && friendlyTarget.name === deliveryRequests[0].sender)
 			{
 				log("Moving closer to recipient.");
-				smart_move({x:friendlyTarget.x, y:friendlyTarget.y});
+				move({x:friendlyTarget.x, y:friendlyTarget.y});
 			}
 		}
 		else if (friendlyTarget)

@@ -568,9 +568,22 @@ function singleTargetCombat()
 			}
 		}
 
-	return target;
+	// return target;
 	}
 
+	//special bosses coop
+	if (!target)
+	{
+		for(id in parent.entities)
+		{
+			let current = parent.entities[id];
+			if(current.type !=="monster" || !current.visible || current.dead) continue;
+			if(!can_move_to(current)) continue;
+			if(!current.target) continue;
+			if(!specialMonsters.includes(current.mtype)) continue;
+			target = current;
+		}		
+	}
 	return target;
 
 }
