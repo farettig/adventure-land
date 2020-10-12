@@ -439,24 +439,13 @@ function checkSentRequests()
 }
 
 
-function sellTrash(){
-	
-	for(let i = 0; i <= 41; i++){
-		if(character.items[i]
-		   && (trashName.indexOf(character.items[i].name) !== -1)
-		   && (!item_grade(character.items[i]) > 0)
-		   && (character.items[i].level == 0)
-		   && (!character.items[i].p)) 
+function sellTrash()
+{
+	for(let i = 0; i <= 41; i++)
+	{
+		if(character.items[i] && (trashName.indexOf(character.items[i].name) !== -1) && (character.items[i].level === 0)) 
 		{
-			log("Merchant is unloading trash: " + character.items[i].name);
-			// if(G.items[character.items[i].name].type === "material")
-			// {
-			// 	sell(i, character.items[i].q);
-			// }
-			// else
-			// {
-				sell(i, character.items[i]);
-			// }
+			sell(i, character.items.q);
 		}
 	}		
 }
@@ -486,8 +475,8 @@ function checkPotionInventory()
 
 }
 
-function doCombat(){
-
+function doCombat()
+{
 
 	if(singleTarget == false)
 	{

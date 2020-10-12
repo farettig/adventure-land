@@ -15,7 +15,6 @@ function warriorSkills(target, farmMonsterName)
     else if ( Spadar )
     {
         warriorCharge(target);
-        // warriorTaunt(target);
         warriorHardshell(target);
         warriorWarcry(target);
         return;
@@ -97,10 +96,23 @@ function warriorEarlyTaunt(currentTarget)
             if(c_dist<min_d) min_d=c_dist,target=current;
         }
         
-        if ( target && (simple_distance(parent.character,target) < G.skills.taunt.range ) && !is_on_cooldown("taunt") && character.mp > G.skills.taunt.mp)
+        if ( target )
         {
-            use_skill("taunt",target);
-            change_target(currentTarget);
+            if (simple_distance(parent.character,target) > character.range)
+            {
+                move(
+                    character.x + (target.x - character.x) * 0.2,
+                    character.y + (target.y - character.y) * 0.2
+                )
+            }
+
+            
+            if (simple_distance(parent.character,target) < G.skills.taunt.range && (!is_on_cooldown("taunt") && character.mp > G.skills.taunt.mp) && simple_distance(parent.character,target) < character.range+20)
+            {
+                use_skill("taunt",target);
+                change_target(currentTarget);
+            }
+
         }
 
     }

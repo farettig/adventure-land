@@ -1,24 +1,6 @@
 
 
-//Custom Settings
-//Farming spots are found in G.maps.main
 
-
-// //  boars
-// const stationary = false;
-// const singleTarget = true;
-// const farmMonsterName = "boar";
-// const farmMap = "winterland";
-// const farmMonsterNr = 8;
-
-
-
-// // Hawks
-// const stationary = false;
-// const singleTarget = true;
-// const farmMonsterName = "bigbird";
-// const farmMap = "main";
-// const farmMonsterNr = 5;
 
 
 // // Wolf
@@ -39,14 +21,6 @@ const farmMonsterNr = 6;
 const extraAggroLimit = 2;
 const specialCoords = {x:-253, y:731};
 
-// // prat
-// const stationary = false;
-// const singleTarget = false;
-// const farmMonsterName = "prat";
-// const farmMap = "level1";
-// const farmMonsterNr = 5;
-// const extraAggroLimit = 0;
-// const specialCoords = {x:150,y:100};
 
 // // bscorpion
 // const stationary = false;
@@ -58,13 +32,6 @@ const specialCoords = {x:-253, y:731};
 // const specialCoords = {x:-550,y:-1300};
 
 
-// // pppompom
-// const stationary = false;
-// const singleTarget = true;
-// const farmMonsterName = "pppompom";
-// const farmMap = "level2n";
-// const farmMonsterNr = 6;
-// const extraAggroLimit = 0;
 
 // // // plantoid
 // const stationary = false;
@@ -84,88 +51,10 @@ const specialCoords = {x:-253, y:731};
 // const farmMonsterName = "squig";
 // const farmMonsterNr = 0;
 
-// // fireroamer    
-// const stationary = false;
-// const singleTarget = true;
-// const farmMonsterName = "fireroamer";
-// const farmMap = "desertland";
-// const farmMonsterNr = 4;
-// const extraAggroLimit = 1;
-// const specialCoords = false;
-
-// // goo    
-// const stationary = false;
-// const singleTarget = false;
-// const farmMonsterName = "goo";
-// const farmMap = "main";
-// const farmMonsterNr = 9;
-// const extraAggroLimit = 50;
-// const specialCoords = false;
 
 
 
-// // bbpompom
-// const stationary = false;
-// const singleTarget = false;
-// const farmMonsterName = "bbpompom";
-// const farmMap = "winter_cave";
-// const farmMonsterNr = 6;
-// const extraAggroLimit = 3;
-
-// // arcticbee
-// const stationary = false;
-// const singleTarget = false;
-// const farmMonsterName = "arcticbee";
-// const farmMap = "winterland";
-// const farmMonsterNr = 10;
-// const extraAggroLimit = 3;
-
-
-// // iceroamer
-// const stationary = false;
-// const singleTarget = false;
-// const farmMonsterName = "iceroamer";
-// const farmMap = "winterland";
-// const farmMonsterNr = 5;
-// const extraAggroLimit = 3;
-
-// // ghost
-// const stationary = false;
-// const singleTarget = true;
-// const farmMonsterName = "ghost";
-// const farmMap = "halloween";
-// const farmMonsterNr = 9;
-// const extraAggroLimit = 3;
-
-// // ghost
-// const stationary = false;
-// const singleTarget = false;
-// const farmMonsterName = "scorpion";
-// const farmMap = "main";
-// const farmMonsterNr = 6;
-// const extraAggroLimit = 3;
-
-// // ent
-// const stationary = false;
-// const singleTarget = true;
-// const farmMonsterName = "ent";
-// const farmMap = "desertland";
-// const farmMonsterNr = 3;
-// // const Spadar = false;
-
-
-// //  crocs
-// const stationary = false;
-// const singleTarget = false;
-// const farmMonsterName = "croc";
-// const farmMap = "main";
-// const farmMonsterNr = 6;
-
-
-
-
-
-const specialMonsters = ["snowman","goldenbat","stompy","fvampire","frog","squigtoad","tortoise","squig"]; //"phoenix"
+const specialMonsters = ["snowman","goldenbat","stompy","fvampire","frog","squigtoad","tortoise","squig","mrpumpkin"]; //"phoenix"
 
 
 //  Defining Characters
@@ -214,7 +103,7 @@ const equipmentToKeep = ["wgloves","test_orb","sshield","fireblade","shield","pa
 
 const trashName = ["hpbelt","hpring","hpearring","hpamulet","vitearring","vitring","ringsj",
                     "wattire","wgloves","wbreeches","wshoes","wcap","stinger","stramulet","cclaw","quiver","slimestaff",
-                    "wbook0"];
+                    "wbook0","phelmet"];
 
 
 //  Upgrade stuff
@@ -234,7 +123,7 @@ const vendorUpgradeList = ["gloves","helmet","coat"];
 const specialItems = ["glitch","firestaff","firesword","seashell","offering","essenceofire","leather","fury","vitscroll","lspores","gem0","seashell"];
 const buyFromPonty = ["glitch","intring","strring","dexring",,"intbelt","strbelt","dexbelt",
                         "coat1","gloves1","pants1","helmet1","hhelmet","harmor","hpants","hgloves","rattail","spores",
-                        "xmassweater","mshield","oozingterror","harbringer","eggnog","crabclaw","poison","spidersilk","beewings","fury",
+                        "xmassweater","mshield","oozingterror","harbringer","eggnog","crabclaw","poison","spidersilk","beewings","fury","suckerpunch",
                         "intearring","strearring","dexearring","essenceoflife","whitegg","rattail","seashell","dstones","hammer","offeringp"];
 
 // let merchantStatus = {idle: true, hasBeenTeleported: false};
@@ -259,7 +148,7 @@ if(character.ctype == "priest") load_code(5);   //priestSkills
 if(character.ctype == "ranger") load_code(6);   //rangerSkills
 if(character.ctype == "warrior") load_code(9);   //warriorSkills
 load_code(11);  //logging
-// if (character.ctype == mainTank.class) load_code(12);  //GUI
+if (character.ctype == mainTank.class) load_code(12);  //GUI
 if(character.ctype == "rogue") load_code(13);  //rogueSkills
 load_code(15);   //pattack
 
@@ -295,7 +184,7 @@ function main(){
 
 
     //If Character is dead, respawn
-    if (character.rip) setTimeout(respawn, 15000);  
+
     if (character.ctype == "merchant") dropAggro();
     usePotions();
     //Loot everything
@@ -309,9 +198,13 @@ function main(){
 
     if ( smart.moving || returningToTown )     return;
     if (character.name == merchantName)     standCheck();
-
+   
     //Merchant Skills are Tier 2 actions
-    if(character.ctype === "merchant") return;
+    if(character.ctype === "merchant") 
+    {
+        merchantAuto();
+        return;
+    }
 
    doCombat();
 }
@@ -319,25 +212,28 @@ function main(){
 function tier2Actions(){
     //Transfer loot to merchant
     transferLoot(merchantName);
-    checkPotionInventory();
-    checkBuffs();
-    characterStore();
-    checkSentRequests();
-    sellTrash();
-    
+
     //Run Merchant Skills
-    if(character.ctype === "merchant"){
+    if(character.ctype === "merchant")
+    {
         if(is_moving(character) || smart.moving){
             parent.close_merchant(41);
         }
         merchantSkills();
-        merchantAuto();
         return;
     }
+    characterStore();
+
 }
 
-function tier3Actions(){
-    
+function tier3Actions()
+{
+    if (character.rip) setTimeout(respawn, 15000);  
+    checkPotionInventory();
+    checkBuffs();
+    checkSentRequests();
+    sellTrash();
+
 }
 
 function respawnProcess()
