@@ -97,7 +97,7 @@ const minRareUpgradeScrolls = 5;
 const inventoryMax = 31;
 const merchantStandMap = "main";
 const merchantStandCoords = {x:-127, y:-124};
-const itemsToKeep = [mPot, hPot, "tracker","handofmidas","goldbooster","lantern","luckbooster","xpbooster","elixirluck","pumpkinspice","computer"];
+const itemsToKeep = [mPot, hPot, "tracker","handofmidas","goldbooster","lantern","luckbooster","xpbooster","elixirluck","pumpkinspice","computer","scroll0","scroll1","cscroll0","cscroll1"];
 const equipmentToKeep = ["wgloves","test_orb","sshield","fireblade","shield","pants","helmet","gloves","wingedboots","wshoes","handofmidas","wcap","wbreeches","bataxe","basher","mittens"];
 
 
@@ -233,6 +233,7 @@ function tier3Actions()
     checkBuffs();
     checkSentRequests();
     sellTrash();
+    upgradeStuff();
 
 }
 
