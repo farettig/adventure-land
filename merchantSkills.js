@@ -29,10 +29,20 @@ function merchantSkills()
 		tidyInventory();
 		merchantsLuck();
 		buyCheapStuff();
+		buyScrolls();
 		// buyVendorUpgrade();
 		if(ponty_enable == true) pontyPurchase();
 		// exchangeGems();
 
+		if (upgrade_enable == true)
+		{
+			upgradeItems();
+			//compound process
+			if(findTriple(0)) compoundItems(0);
+			if(findTriple(1)) compoundItems(1);
+			if(findTriple(2)) compoundItems(2);
+			// if(findTriple(3)) compoundItems(3);
+		}
 
 	};
 
@@ -129,6 +139,24 @@ function tidyInventory()
 	}
 }
 
+function buyScrolls(){
+	if(quantity("cscroll0") <= minNormalCompoundScrolls){
+		buy("cscroll0", (minNormalCompoundScrolls - quantity("cscroll0")));
+		// log("Bought Normal Compound Scrolls!");
+	}
+	if(quantity("cscroll1") <= minRareCompoundScrolls){
+		buy("cscroll1", (minRareCompoundScrolls - quantity("cscroll1")));
+		// log("Bought Rare Compound Scrolls!");
+	}
+	if(quantity("scroll0") <= minNormalUpgradeScrolls){
+		buy("scroll0", (minNormalUpgradeScrolls - quantity("scroll0")));
+		// log("Bought Normal Upgrade Scrolls!");
+	}
+	if(quantity("scroll1") <= minRareUpgradeScrolls){
+		buy("scroll1", (minRareUpgradeScrolls - quantity("scroll1")));
+		// log("Bought Rare Upgrade Scrolls!");
+	}
+}
 
 function buyVendorUpgrade(){
 	
@@ -171,8 +199,80 @@ function depositItems()
 	}
 }
 
+function upgradeItems()
+{
+	if(character.q.upgrade || (quantity("scroll0") < 1) || (quantity("scroll1") < 1))
+	{
+		//Already combining something!
+		return;
+	}
+	
+	for(let i = 0; i <= 41; i++)
+	{
+		if(character.items[i] && (character.items[i].level < upgradeItemLevel1) && (!character.items[i].p) && upgradeItemList.includes(character.items[i].name) && item_grade(character.items[i]) < 1 )
+		{
+			// log("Upgrade Started for item " + G.items[character.items[i].name].name + " +" + character.items[i].level);
+			upgrade(i,locate_item("scroll0"));
+			return;
+		}
+		else if(character.items[i] && (character.items[i].level < upgradeItemLevel2) && (!character.items[i].p) && upgradeItemList.includes(character.items[i].name))
+		{
+			// log("Upgrade Started for item " + G.items[character.items[i].name].name + " +" + character.items[i].level);
+			upgrade(i,locate_item("scroll1"));
+			return;
+		}
+	}
+}
 
+function compoundItems(level){
+	if(character.q.upgrade){
+		//log("Already combining something!");
+		return;
+	}
+	let triple = findTriple(level);
+	if(triple && triple.length === 3 && !character.q.compound && level === 2)
+	{
+		compound(triple[0],triple[1],triple[2],locate_item("cscroll1"));
+		// log("Compounded an Item!");
+	}
 
+	else if(triple && triple.length === 3 && !character.q.compound)
+	{
+		compound(triple[0],triple[1],triple[2],locate_item("cscroll0"));
+		// log("Compounded an Item!");
+	}
+}
+
+function findTriple(level){
+	let compoundTriple = [];
+	for(let i = 0; i <= 41; i++){
+		if(character.items[i]
+			   && character.items[i].level === level
+			   && (!character.items[i].p)
+		   	//Weapons can't be compounded. If item has attack attr, no compound
+			 //&& !G.items[character.items[i].name].attack
+			 && G.items[character.items[i].name].compound
+			 ){
+			for(let j = i + 1; j <= 41; j++){
+				if(character.items[j]
+				   && character.items[j].name === character.items[i].name
+				   && (!character.items[i].p)
+				   && character.items[j].level === level){
+					for(let k = j + 1; k <= 41; k++){
+						if(character.items[k]
+						   && character.items[k].name === character.items[j].name
+						   && (!character.items[i].p)
+						   && character.items[k].level === level){
+							// log(" Slot i: "  + i + " item: " + character.items[i].name + " Slot j: "  + j + " item: " + character.items[j].name + " Slot k: "  + k + " item: " + character.items[k].name )
+							compoundTriple.push(i, j, k);
+							return compoundTriple
+						}
+					}
+				}
+			}
+		}
+	}
+}
 
 function findEmptyTradeSlots(){
 	let tradeSlots = Object.keys(character.slots).filter(tradeSlot => tradeSlot.includes("trade"));
@@ -439,7 +539,7 @@ function merchantAuto(target)
 
 		if (isPartyMember && friendlyTarget)
 		{
-			if (simple_distance(friendlyTarget, character) < 300)
+			if (distance(friendlyTarget, character) < 100)
 			{
 				let shipment = getShipmentFor(friendlyTarget.name);
 
@@ -457,7 +557,7 @@ function merchantAuto(target)
 			else if (deliveryMode && !smart.moving && !returningToTown && deliveryRequests.length > 0 && friendlyTarget.name === deliveryRequests[0].sender)
 			{
 				log("Moving closer to recipient.");
-				move({x:friendlyTarget.x, y:friendlyTarget.y});
+				smart_move({x:friendlyTarget.x, y:friendlyTarget.y});
 			}
 		}
 		else if (friendlyTarget)

@@ -89,7 +89,7 @@ function warriorEarlyTaunt(currentTarget)
             var current = parent.entities[id];
             if(current.type !="monster" || !current.visible || current.dead) continue;
             if(current.mtype != farmMonsterName) continue;
-            if(current.target) continue;
+            if(current.target == character.name) continue;
             if(current == currentTarget) continue;
             if(!can_move_to(current)) continue;
             var c_dist=parent.distance(character,current);
@@ -113,11 +113,6 @@ function warriorEarlyTaunt(currentTarget)
                 change_target(currentTarget);
             }
 
-            if ((simple_distance(parent.character,target) <= character.range))
-            {
-                attack(target);
-            }
-
         }
 
     }
@@ -125,7 +120,7 @@ function warriorEarlyTaunt(currentTarget)
 
 function warriorTaunt(target)
 {
-    if ( !get_target_of(target) && ( simple_distance(character,target) < G.skills.taunt.range ) && ( simple_distance(character,target) > (character.range*2) ) && !is_on_cooldown("taunt") && character.mp > G.skills.taunt.mp)
+    if (get_target_of(target) !== character && ( simple_distance(character,target) < G.skills.taunt.range ) && !is_on_cooldown("taunt") && character.mp > G.skills.taunt.mp)
     {
         use_skill("taunt", target);
     }
