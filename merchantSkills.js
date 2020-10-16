@@ -325,7 +325,7 @@ function checkRequests()
 			{
 				let recipient = deliveryRequests[i];
 				
-				if (recipient && !is_moving(character))
+				if (recipient && !is_moving(character) && simple_distance(recipient,character) > 300)
 				{
 					moveToRequest(recipient);
 				}
@@ -349,11 +349,12 @@ function getShipmentFor(name)
 	{
 		if (deliveryShipments[i].name == name)
 		{
+			log("shipment tstatus acquired")
 			return deliveryShipments[i];
 		}
 	}
 
-	return null;
+//	return null;
 }
 
 function standCheck()
@@ -398,7 +399,7 @@ function moveToRequest(request)
 				}
 			);
 		}
-		else
+		else if (simple_distance(character,request) > 200)
 		{
 			smart_move({ x: request.x, y: request.y });
 		}
@@ -437,7 +438,7 @@ function merchantAuto(target)
 			continue;
 		}
 
-		if (isPartyMember && friendlyTarget)
+		if (isPartyMember==true && friendlyTarget)
 		{
 			if (simple_distance(friendlyTarget, character) < 300)
 			{

@@ -546,6 +546,7 @@ function singleTargetCombat()
 	if(character.name == mainTank.name)
 	{
 		target = engageTarget();
+		return target;
 	}
 	else
 	{
@@ -567,8 +568,6 @@ function singleTargetCombat()
 				target = current;
 			}
 		}
-
-	// return target;
 	}
 
 	//special bosses coop
