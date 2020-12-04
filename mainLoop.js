@@ -1,25 +1,21 @@
 
-
-
-
-
-// // Wolf
-// const stationary = false;
-// const singleTarget = true;
-// const farmMonsterName = "wolf";
-// const farmMap = "winterland";
-// const farmMonsterNr = 7;
-// const extraAggroLimit = 2;
-// const specialCoords = {x:422, y:-2423};
-
-// xscorp
+// Wolf
 const stationary = false;
 const singleTarget = true;
-const farmMonsterName = "xscorpion";
-const farmMap = "halloween";
-const farmMonsterNr = 6;
+const farmMonsterName = "wolf";
+const farmMap = "winterland";
+const farmMonsterNr = 7;
 const extraAggroLimit = 2;
-const specialCoords = {x:-253, y:731};
+const specialCoords = {x:422, y:-2423};
+
+// // xscorp
+// const stationary = false;
+// const singleTarget = true;
+// const farmMonsterName = "xscorpion";
+// const farmMap = "halloween";
+// const farmMonsterNr = 6;
+// const extraAggroLimit = 2;
+// const specialCoords = {x:-253, y:731};
 
 
 // // bscorpion
@@ -54,7 +50,7 @@ const specialCoords = {x:-253, y:731};
 
 
 
-const specialMonsters = ["snowman","goldenbat","stompy","fvampire","frog","squigtoad","tortoise","squig","mrpumpkin"]; //"phoenix"
+const specialMonsters = ["snowman","goldenbat","stompy","fvampire","frog","squigtoad","tortoise","squig","mrpumpkin","grinch"]; 
 
 
 //  Defining Characters
@@ -88,7 +84,7 @@ const hPotionThreshold = 500;
 const potionMax = 5000;
 
 //  inventory management
-const reserveMoney = 150000000;
+const reserveMoney = 1500000000;
 const reserveMoneyCombat = 5000000;
 const minNormalCompoundScrolls = 10;
 const minRareCompoundScrolls = 3;
@@ -102,8 +98,8 @@ const equipmentToKeep = ["wgloves","test_orb","sshield","fireblade","shield","pa
 
 
 const trashName = ["hpbelt","hpring","hpearring","hpamulet","vitearring","vitring","ringsj",
-                    "wattire","wgloves","wbreeches","wshoes","wcap","stinger","stramulet","cclaw","quiver","slimestaff",
-                    "wbook0","phelmet"];
+                    "wattire","wgloves","wbreeches","wshoes","wcap","stinger","stramulet","intamulet","dexamulet","cclaw","quiver","slimestaff",
+                    "wbook0","phelmet","dexring","strring","gcape"];
 
 
 //  Upgrade stuff
@@ -118,20 +114,15 @@ const upgradeItemList = ["bow","staff","helmet","shoes","gloves","pants","coat",
                         "eslippers","eears", "epyjamas","t2bow","carrotsword","merry","cclaw",
                         "wingedboots","cclaw","xmassweater","pmace","coat1","gloves1","pants1","helmet1","cape"]; 
 
-const combineItemList = ["intring","strring","dexring","intearring","strearring","dexearring","intamulet","dexamulet"];
+const combineItemList = ["intring","intearring","strearring","dexearring"];
 const vendorUpgradeList = ["gloves","helmet","coat"]; 	
 const specialItems = ["glitch","firestaff","firesword","seashell","offering","essenceofire","leather","fury","vitscroll","lspores","gem0","seashell"];
-const buyFromPonty = ["glitch","intring","strring","dexring",,"intbelt","strbelt","dexbelt",
-                        "coat1","gloves1","pants1","helmet1","hhelmet","harmor","hpants","hgloves","rattail","spores",
+const buyFromPonty = ["glitch","intring","intbelt","strbelt","dexbelt","hhelmet","harmor","hpants","hgloves","rattail","spores",
                         "xmassweater","mshield","oozingterror","harbringer","eggnog","crabclaw","poison","spidersilk","beewings","fury","suckerpunch",
-                        "intearring","strearring","dexearring","essenceoflife","whitegg","rattail","seashell","dstones","hammer","offeringp"];
+                        "intearring","strearring","dexearring","essenceoflife","whitegg","rattail","seashell","dstones","hammer","offeringp",
+                        "elixirint0","elixirint1","elixirint2","elixirstr0","elixirstr1","elixirstr2","elixirdex0","elixirdex1","elixirdex2"];
 
-// let merchantStatus = {idle: true, hasBeenTeleported: false};
-// let mluckRecently = false;
-// let hpRecently = false;
-// let mpRecently = false;
-// let requestFulfilled = false;
-// let requestedSomething = false;
+
 
 const craftingEnabled = true;
 var craftingOn = craftingEnabled;
@@ -148,9 +139,14 @@ if(character.ctype == "priest") load_code(5);   //priestSkills
 if(character.ctype == "ranger") load_code(6);   //rangerSkills
 if(character.ctype == "warrior") load_code(9);   //warriorSkills
 load_code(11);  //logging
-if (character.ctype == mainTank.class) load_code(12);  //GUI
+// if (character.ctype == mainTank.class) load_code(12);  //GUI
 if(character.ctype == "rogue") load_code(13);  //rogueSkills
 load_code(15);   //pattack
+load_code(17);   //pattack
+
+
+if (character.ctype == mainTank.class) pause();
+
 
 
 
@@ -209,7 +205,10 @@ function main(){
    doCombat();
 }
 
-function tier2Actions(){
+function tier2Actions()
+{
+    characterStore();
+
     //Transfer loot to merchant
     transferLoot(merchantName);
 
@@ -234,6 +233,24 @@ function tier3Actions()
     checkSentRequests();
     sellTrash();
     upgradeStuff();
+
+    if(character.ctype === "merchant" && !smart.moving)
+    {
+        if(character.map !== merchantStandMap && (new Date().getMinutes() === 15 || new Date().getMinutes() === 45))
+        {
+            smart_move(merchantStandMap, () => {
+                smart_move(merchantStandCoords, () =>
+                {
+                    log("Merchant entered vendor mode.");
+                    log("Crafting Mode: " + craftingOn);
+                    parent.open_merchant(locate_item("stand0"));
+                    vendorMode = true;
+                });
+            });
+        }
+    }
+
+
 
 }
 

@@ -15,16 +15,25 @@ function merchantOnStart()
 
 function merchantSkills()
 {
-	checkRequests();
-	// specialParty();
+
 	dropAggro();
+
 	if(is_moving(character) || smart.moving || deliveryMode)
 	{
 		return;
 	}
 
-	if(vendorMode)
+	partyMluck();
+
+	if(vendorMode == true)
 	{
+		let town = isInTown();
+		if ( town == false)
+		{
+			goBackToTown();
+			return;
+		}
+
 		sellTrash();
 		tidyInventory();
 		merchantsLuck();
@@ -57,7 +66,7 @@ function enableVendorMode()
 
 	log("Merchant returning to vendor mode.");
 
-	if (!isInTown())
+	if ( isInTown() == false)
 	{
 		goBackToTown();
 	}
@@ -184,8 +193,10 @@ function findEmptyTradeSlots(){
 	}
 }
 
-function merchantsLuck(name){
-	if(name && character.mp > (character.max_mp * manaReserve) && character.mp > G.skills.mluck.mp && can_use("mluck")){
+function merchantsLuck(name)
+{
+	if(name && character.mp > (character.max_mp * .2) && character.mp > G.skills.mluck.mp && can_use("mluck"))
+	{
 		use_skill("mluck", name);
 		log("Buffing: " + name);
 	}
@@ -237,125 +248,10 @@ function openMerchantStand(){
 
 function merchant_on_cm(sender, data)
 {
-
-	if (data.message == "mluck")
-	{
-		if (deliveryRequests.find((x) => { if (x.request == "mluck") return x; }))
-		{
-			log("Already have mluck request.");
-			return;
-		}
-
-		log("Recieved mluck request from " + sender);
-		deliveryRequests.push({ request: "mluck", sender: sender, x: data.x, y: data.y, map: data.map });
-	}
-	else if (data.message == "thanks")
-	{
-		deliveryRequests = [];
-
-		// log("Successful delivery confirmation from " + sender);
-
-		// if (data.request == "mluck")
-		// {
-		// 	for (let i = deliveryRequests.length - 1; i >= 0; i--)
-		// 	{
-		// 		if (deliveryRequests[i].request == "mluck")
-		// 		{
-		// 			deliveryRequests.splice(i, 1);
-		// 		}
-		// 	}
-		// }
-		// else
-		// {
-		// 	deliveryRequests.splice(deliveryRequests.indexOf(x => x.sender == sender && x.request == data.request), 1);
-		// }
-	}
-
-
-	//	this should remain the last check
-	if (data.message == "deliveryConfirmation")
-	{
-		if (!data.confirm)
-		{
-			return;
-		}
-
-		for (let i = deliveryRequests.length - 1; i >= 0; i--)
-		{
-			if (deliveryRequests[i].sender == sender)
-			{
-				log("Cleaning up delivery list...");
-				deliveryRequests.splice(i, 1);
-			}
-		}
-
-		for (let i = deliveryShipments.length - 1; i >= 0; i--)
-		{
-			if (deliveryShipments[i].name == sender)
-			{
-				log("Cleaning up delivery list...");
-				deliveryShipments.splice(i, 1);
-			}
-		}
-	}
-	
+	return;
 }
 
-function checkRequests()
-{
-	if (deliveryRequests.length == 0)
-	{
-		deliveryMode = false;
-		if ( !isInTown )
-		{	
-			goBackToTown();
-		}
-		return;
-	}
 
-	if (deliveryRequests.length > 0)
-	{
-		deliveryMode = true;
-		disableVendorMode();
-
-		for (let i = 0; i < deliveryRequests.length; i++)
-		{
-			//	deliver to recipient
-			if (deliveryRequests[i].shipment || deliveryRequests[i].request == "mluck")
-			{
-				let recipient = deliveryRequests[i];
-				
-				if (recipient && !is_moving(character) && simple_distance(recipient,character) > 300)
-				{
-					moveToRequest(recipient);
-				}
-				// else
-				// {
-				// 	requestTeleport();
-				// }
-			}
-		}
-	}
-}
-
-function getShipmentFor(name)
-{
-	if (deliveryShipments.length == 0)
-	{
-		return null;
-	}
-
-	for (let i = 0; i < deliveryShipments.length; i++)
-	{
-		if (deliveryShipments[i].name == name)
-		{
-			log("shipment tstatus acquired")
-			return deliveryShipments[i];
-		}
-	}
-
-//	return null;
-}
 
 function standCheck()
 {
@@ -372,15 +268,6 @@ function standCheck()
 	}
 }
 
-
-function deliverItems(shipmentToDeliver)
-{
-	
-	if (shipmentToDeliver.elixir != null)
-	{
-		deliverElixir(shipmentToDeliver);
-	}
-}
 
 
 function moveToRequest(request)
@@ -549,4 +436,32 @@ function checkMluck(player)
 	if(player.s.mluck.ms>3345000) return true;
 	
 
+}
+
+function partyMluck()
+{
+	if(is_moving(character) || smart.moving || deliveryMode) return;
+	
+	for(let p of partyList)
+	{
+		let curr = get(`characterStore_${p}`);
+		if (!curr.s || !curr.s.mluck || curr.s.mluck.ms<300000 || curr.s.mluck.f != character.name)
+		{	
+			if ( character.map != curr.map )
+			{
+				log(`moving to ${curr.map} for ${p}`)
+				smart_move({to:curr.map}, () => {
+					smart_move({ x:curr.x, y:curr.y}, () => {
+						merchantsLuck(curr.name);
+						enableVendorMode();
+					});
+				});				
+			} 
+			else 
+			{
+				merchantsLuck(curr.name);
+				enableVendorMode();
+			}
+		}
+	}
 }

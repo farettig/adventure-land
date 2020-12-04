@@ -90,17 +90,16 @@ function getFarmingSpot(farmMonsterName = "crab", farmMap = "main", farmMonsterN
 function transferLoot(merchantName){
     let merchant = get_player(merchantName);
     if(character.ctype === "merchant") return;
-    if(character.ctype !== "merchant"
-       && merchant
-       //&& merchant.owner === character.owner
-       && distance(character, merchant) < 400){
+	if(character.ctype !== "merchant" && merchant && distance(character, merchant) < 400)
+	{
         //Transfer Gold
-		if(character.gold > reserveMoneyCombat)
+		if(character.gold > reserveMoneyCombat*2)
 		{
 			send_gold(merchant, character.gold - reserveMoneyCombat)
 		}
         //Transfer Items
-        if(character.items.filter(element => element).length > 4){
+		if(character.items.filter(element => element).length > 20)
+		{
             for(let i = 0; i <= 41; i++){
 				if(character.items[i] && (!itemsToKeep.includes(character.items[i].name)))
 				{
@@ -144,31 +143,9 @@ function usePotions() 	//Replenish Health and Mana
 	}
 }
 
-function getHolidayBuff(){
-    
-    if ((new Date().getHours() === 00
-        || new Date().getHours() === 12)
-       && new Date().getMinutes() === 00){
-        
-        smart_move({to:"town"}, () => {
-            parent.socket.emit("interaction",{type:"newyear_tree"});
-        });
-    }
-}
 
-function restoreParty(){
-	if(parent.party_list.length < 3){
-		log("Restoring party.");
-		loadCharacters();
-		log("Party Restored.");
-	}
-}
 
-function on_magiport(name){
-	if(character.ctype === "merchant"){
-		accept_magiport(name);
-	}
-}
+
 
 function getEmptyInventorySlotCount()
 {
@@ -204,15 +181,6 @@ function approachTarget(target, onComplete)
 	}
 }
 
-function hasUpgradableItems()
-{
-	if (character.items.find((x) => { if (x && upgradeItemList.includes(x.name) && x.level < upgradeItemLevel2) return x; }))
-	{
-		return true;
-	}
-
-	return false;
-}
 
 function isInTown()
 {
@@ -335,33 +303,32 @@ function requestMluck()
 function checkBuffs()
 {
 	if (soloMode && !parent.party_list.includes(merchantName)) return;
-	if (character.name === merchantName || farmMonsterName === "ent") return;
 	let mluck = false;
 	//let elixir = false;
 
 
-	//	check that you have mLuck from your own merchant
-	if (checkMluck(character))
-	{
-		mluck = true;
-	}
-	else
-	{
-		//	if you have someone elses mluck and are in town just accept it, merchant will fix it after party leaves town
-		if (character.s.mluck && isInTown())
-		{
-			mluck = true;
-		}
-		else
-		{
-			mluck = false;
-		}
-	}
+	// //	check that you have mLuck from your own merchant
+	// if (checkMluck(character))
+	// {
+	// 	mluck = true;
+	// }
+	// else
+	// {
+	// 	//	if you have someone elses mluck and are in town just accept it, merchant will fix it after party leaves town
+	// 	if (character.s.mluck && isInTown())
+	// 	{
+	// 		mluck = true;
+	// 	}
+	// 	else
+	// 	{
+	// 		mluck = false;
+	// 	}
+	// }
 
-	if (!mluck)
-	{
-		requestMluck();
-	}
+	// if (!mluck)
+	// {
+	// 	requestMluck();
+	// }
 
 
 	if(mainTank.name == character.name)
@@ -388,10 +355,6 @@ function checkBuffs()
 		}
 	}
 
-	//elixir = checkElixirBuff();
-
-	return (mluck);
-	//return (mluck && elixir);
 }
 
 
@@ -475,253 +438,8 @@ function checkPotionInventory()
 
 }
 
-function doCombat()
-{
 
-	if(singleTarget == false)
-	{
-		target = engageTarget();
-	}
-	else if (Spadar)
-	{
-		ToT = "Brutus"
-		target = get_target_of(parent.entities[ToT]);
-	}
-	else 
-	{
-		target = singleTargetCombat();
-		if (farmMonsterName !== "bscorpion") approachLeader();
-		
-	}
-	
-	if(character.ctype === "priest") priestSkills(target);
-	if(target)
-	{
-		//Kites Target
-		//kiteTarget(target);
-		//Uses available skills
-		if(character.ctype === "mage") mageSkills(target);
-		if(character.ctype === "priest") priestSkills(target);
-		if(character.ctype === "ranger") rangerSkills(target, farmMonsterName);
-		if(character.ctype === "warrior") warriorSkills(target, farmMonsterName);
-		if(character.ctype === "rogue") rogueSkills(target, farmMonsterName);
-		//Attacks the target
-		autoFight(target);
-	}
-	else 
-	{	//Go to Farming Area
-		if(!isAtFarmSpot()){
-			getFarmingSpot(farmMonsterName, farmMap, farmMonsterNr, "move");
-		}
-	
-	}
-}
 
-function engageTarget()
-{
-	//Finds a suitable target and attacks it. Also returns the target!
-	let target = null;
-
-	//  look for any special targets
-	for(let i = 0; i < specialMonsters.length; i++)
-	{
-		target = getTarget(specialMonsters[i]);
-	}
-
-	//  look for the monster you are farming
-	if(!target)
-	{
-		target = getTarget(farmMonsterName);
-	}
-	
-	return target;
-
-	
-}
-
-function singleTargetCombat()
-{
-	let target = null;
-	
-	if(character.name == mainTank.name)
-	{
-		target = engageTarget();
-		return target;
-	}
-	else
-	{
-		let min_d=999999;
-		let min_hp=1;
-		for(id in parent.entities)
-		{
-			let current = parent.entities[id];
-			if(current.type !=="monster" || !current.visible || current.dead) continue;
-			if(current.target !== mainTank.name) continue;
-			if(!can_move_to(current)) continue;
-			let c_dist = parent.distance(character,current);
-			let c_hp = (current.hp/current.max_hp);
-
-			if((c_dist < min_d) && (c_hp < min_hp)) 
-			{
-				min_d = c_dist;
-				min_hp = c_hp;
-				target = current;
-			}
-		}
-	}
-
-	//special bosses coop
-	if (!target)
-	{
-		for(id in parent.entities)
-		{
-			let current = parent.entities[id];
-			if(current.type !=="monster" || !current.visible || current.dead) continue;
-			if(!can_move_to(current)) continue;
-			if(!current.target) continue;
-			if(!specialMonsters.includes(current.mtype)) continue;
-			target = current;
-		}		
-	}
-	return target;
-
-}
-
-function getTarget(farmTarget)
-{
-
-	let target = get_targeted_monster();
-	if(target) 
-	{
-		if(specialMonsters.includes(target.mtype)) return target;
-		if(target.target == mainTank.name) 
-		{
-			return target;
-		}
-		else if (target.target !== mainTank.name) target=null;
-		
-	}
-	
-	if(!target)
-	{
-		if(character.s.burned)
-		{
-			if(character.s.burned.intensity > burnCap) return;
-		} 
-		//Returns monster that targets party-member
-		partyList.forEach(element => {
-			target = get_nearest_monster({target:element});
-			if(target)
-			{
-				change_target(target);
-				return target;
-			}
-		});
-		//Returns monster that targets character
-		target = get_nearest_monster({target:character.name});
-		if(target)
-		{
-			change_target(target);
-			return target;
-		}
-
-		//Returns any monster that targets nobody
-		target = get_nearest_monster({
-			
-			no_target:true,
-			type:farmTarget
-		});
-		if(target){
-		//	change_target(target);
-			return target;
-		}
-	}
-	return target;
-}
-
-function autoFight(target){
-	if(!target) return;
-
-	if(specialMonsters.includes(target.mtype) && (character.ctype == mainTank.class))
-	{
-		if(target.mtype === "stompy")
-		{
-			if(simple_distance(character,specialCoords) > 20 ) 
-			{
-				move(specialCoords.x,specialCoords.y);
-			}
-		}
-		if(target.mtype === "ent")
-		{
-			move(-435,-1882)
-		}
-
-		if(farmMonsterName === "bscorpion")
-		{
-
-			if(character.speed > 35) cruise(35);
-			circleCoords(x=-400, y=-1250, radius=125)
-			// if(simple_distance(character,target)<(character.range*.8))
-
-		}
-		
-	}
-
-	if(target.mtype === "fireroamer" && (character.ctype == mainTank.class))
-	{
-		let targetCoords = {x:168,y:-947}
-		if (simple_distance(character,targetCoords) > 10)
-		{
-			move(targetCoords.x,targetCoords.y);
-		}
-
-		
-	}
-
-	if(is_in_range(target, "attack") == false)
-	{
-		if (stationary == true && singleTarget == false)
-		{
-			target = get_nearest_monster({type:farmMonsterName});
-			change_target(target);
-		}
-		else if (stationary == false)
-		{
-			move(
-				character.x + (target.x - character.x) * 0.2,
-				character.y + (target.y - character.y) * 0.2
-			);
-		}
-		else 
-		{
-			return;
-		}
-	}
-
-	if (usePattack == true ) //&& pCanAttack == true
-	{
-		if (is_in_range(target, "attack") == false) return;
-		attack(target)
-	}
-	else if (is_on_cooldown("attack") == false && (!window.last_attack || mssince(window.last_attack) > 500))
-	{
-		////	from egehawk	////
-		//	rudimentary hazard achievment 
-		// if (character.ctype === "warrior" && ( target.hp < character.attack * 2)) return;
-		// if (( target.hp < character.attack * 1.3) && target.s.burned) return;
-
-		// if (character.ctype === "warrior") equipWeapon();
-		window.last_attack = new Date();
-		attack(target).then((message) => {
-			reduce_cooldown("attack", Math.min(character.ping, 250));
-			window.last_attack = new Date(0);
-			// if (character.ctype === "warrior") equipShield();
-		}).catch((message) => {
-		//	log(character.ctype + " attack failed: " + message.reason);
-			// if (character.ctype === "warrior") equipShield();
-		});
-	}
-}
 ////// CM //////
 
 function on_cm(sender, data)
@@ -1043,27 +761,6 @@ function lootRoutine()
 
 			
 		}
-	}
-
-}
-
-
-function approachLeader()
-{
-	
-	if (character.name !== mainTank.name)
-	{
-		let leaderEntity = get_player(mainTank.name);
-		if (character.name == rangerName && Spadar) leaderEntity = get_player("SpadarFaar");
-		if (leaderEntity && isAtFarmSpot() &&  (distance(character,leaderEntity) > 20) )
-		{
-			move(
-				character.x + (leaderEntity.x - character.x) * 0.2,
-				character.y + (leaderEntity.y - character.y) * 0.2
-			);
-		}
-
-
 	}
 }
 
@@ -1453,3 +1150,19 @@ function buyScrolls(){
 		// log("Bought Rare Upgrade Scrolls!");
 	}
 }
+
+
+// Holiday's Buff
+function happy_holidays()
+{
+    if(!G.maps.main.ref.newyear_tree) return;
+    G.maps.main.ref.newyear_tree.return=true;
+    // If first argument of "smart_move" includes "return"
+    // You are placed back to your original point
+    smart_move(G.maps.main.ref.newyear_tree,function(){
+        // This executes when we reach our destination
+        parent.socket.emit("interaction",{type:"newyear_tree"});
+        say("Happy Holidays!");
+    });
+}
+// happy_holidays()

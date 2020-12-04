@@ -98,7 +98,7 @@ function warriorEarlyTaunt(currentTarget)
         
         if ( target )
         {
-            if (simple_distance(parent.character,target) > character.range)
+            if ( (simple_distance(parent.character,target) > character.range) && (simple_distance(parent.character,currentTarget) < character.range) )
             {
                 move(
                     character.x + (target.x - character.x) * 0.2,
@@ -107,13 +107,12 @@ function warriorEarlyTaunt(currentTarget)
             }
 
             
-            if (simple_distance(parent.character,target) < G.skills.taunt.range && (!is_on_cooldown("taunt") && character.mp > G.skills.taunt.mp) && simple_distance(parent.character,target) < character.range+20)
+            if (simple_distance(parent.character,target) < G.skills.taunt.range && (is_on_cooldown("taunt")==false && character.mp > G.skills.taunt.mp) && simple_distance(parent.character,target) < character.range+20)
             {
                 use_skill("taunt",target);
                 change_target(currentTarget);
             }
-
-            if ((simple_distance(parent.character,target) <= character.range))
+            else if ((simple_distance(parent.character,target) < character.range))
             {
                 attack(target);
             }
